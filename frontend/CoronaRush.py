@@ -1,6 +1,11 @@
 import tkinter as tk
 
 def calculate_window_size(screen_width, screen_height):
+    # screen_width = 1700
+    # screen_height = 900
+    screen_height = 720
+    screen_width = 1280
+
     window_width = int(screen_width * 0.8)
     window_height = int(screen_height * 0.8)
     return window_width, window_height
@@ -33,20 +38,20 @@ left_frame = tk.Frame(root, bg=background_color, width=350, height=window_height
 left_frame.pack(side=tk.LEFT, fill=tk.Y)
 
 # Tytuł aplikacji
-label = tk.Label(left_frame, text="Corona Rush", font=("Arial", 25, "bold"), fg="white", bg=background_color)
-label.place(relx=0.5, rely=0.06, anchor=tk.CENTER)
+# label = tk.Label(left_frame, text="Corona Rush", font=("Arial", 25, "bold"), fg="white", bg=background_color)
+# label.place(relx=0.5, rely=0.06, anchor=tk.CENTER)
 
 # Opis selectora
-label = tk.Label(left_frame, text="Wybierz państwo", font=("Arial", 13), fg="white", bg=background_color)
-label.place(relx=0.14, rely=0.15)
+# label = tk.Label(left_frame, text="Wybierz państwo", font=("Arial", 13), fg="white", bg=background_color)
+# label.place(relx=0.14, rely=0.15)
 
 # Selektor
 countries = ["Polska", "Anglia", "Niemcy", "Rosja"]
 selected_country = tk.StringVar(left_frame)
 selected_country.set(countries[0])  # Ustawienie domyślnego wyboru
 country_menu = tk.OptionMenu(left_frame, selected_country, *countries, command=country_selected)
-country_menu.config(width=35)
-country_menu.place(relx=0.5, rely=0.20, anchor=tk.CENTER)
+country_menu.config(width=40)
+country_menu.place(relx=0.5, rely=0.07, anchor=tk.CENTER)
 
 # Separator
 canvas = tk.Canvas(root, width=8, height=window_height, bg=orange_color, highlightthickness=0)

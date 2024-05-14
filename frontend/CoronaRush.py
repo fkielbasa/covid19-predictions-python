@@ -1,10 +1,10 @@
-import tkinter as tk
-from tkinter import ttk
+import customtkinter
+from CTkListbox import *
+
+customtkinter.set_appearance_mode("System")
+customtkinter.set_default_color_theme("blue")
 
 def calculate_window_size(screen_width, screen_height):
-    screen_height = 720
-    screen_width = 1280
-
     window_width = int(screen_width * 0.8)
     window_height = int(screen_height * 0.8)
     return window_width, window_height
@@ -22,46 +22,36 @@ def country_selected(event):
     selected_country = menu.get()
     print("Wybrano", selected_country)
 
+root = customtkinter.CTk()
 
-root = tk.Tk()
-root.title("Corona Rush")
-
+# Obliczenie i ustawienie rozmiaru okna na podstawie rozmiaru ekranu
 window_width, window_height = calculate_window_size(root.winfo_screenwidth(), root.winfo_screenheight())
+root.geometry(f"{window_width}x{window_height}")
 center_window(root, window_width, window_height)
 
-# Kolory
-background_color = "#344955"
-chart_color = "#4a6572"
-orange_color = "#f9aa33"
+root.title("Corona Rush")
+
+def show_value(selected_option):
+    print(selected_option)
 
 # Lewy panel
-left_frame = tk.Frame(root, bg=background_color, width=350, height=window_height)
-left_frame.pack(side=tk.LEFT, fill=tk.Y)
+left_frame = customtkinter.CTkFrame(root, width=300, height=window_height)
+left_frame.place(relx=0.12, rely=0.17, anchor="center")
 
-# Selektor
-countries = ["Polska", "Anglia", "Niemcy", "Rosja"]
-selected_country = tk.StringVar(left_frame)
-selected_country.set(countries[0])  # Ustawienie domyślnego wyboru
+# Lista rozwijalna w ramce
+listbox = CTkListbox(left_frame, command=show_value, width=200, height=150)
+listbox.pack(fill="both", expand=True)
 
-# Combobox o szerokości 40
-menu = ttk.Combobox(left_frame, textvariable=selected_country, values=countries, width=40)
-menu.place(relx=0.5, rely=0.07, anchor=tk.CENTER)
-menu.bind("<<ComboboxSelected>>", country_selected)
+listbox.insert(0, "Poland")
+listbox.insert(1, "Spain")
+listbox.insert(2, "France")
+listbox.insert(3, "Canada")
+listbox.insert(4, "Slovakia")
+listbox.insert(5, "Russia")
+listbox.insert("END", "Ukraine")
 
-# Prawy panel
-right_frame = tk.Frame(root, bg=background_color, width=window_width-300, height=window_height)
-right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
-
-# Wymiary wykresu
-chart_width = 600
-chart_height = 500
-
-# Współrzędne wykresu
-chart_x = (window_width - chart_width) / 2
-chart_y = (window_height - chart_height) / 2
-
-# Ramka dla wykresu
-chart_frame = tk.Frame(right_frame, bg=chart_color, width=chart_width, height=chart_height)
-chart_frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+#Prawy panel
+right_frame = customtkinter.CTkFrame(root, width=800, height=window_height-100, border_width=5, border_color="#F9AA33")
+right_frame.place(relx=0.6, rely=0.47, anchor="center")
 
 root.mainloop()

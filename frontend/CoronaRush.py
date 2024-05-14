@@ -1,8 +1,7 @@
 import tkinter as tk
+from tkinter import ttk
 
 def calculate_window_size(screen_width, screen_height):
-    # screen_width = 1700
-    # screen_height = 900
     screen_height = 720
     screen_width = 1280
 
@@ -19,8 +18,10 @@ def center_window(window, width, height):
 
     window.geometry(f"{width}x{height}+{x_coordinate}+{y_coordinate}")
 
-def country_selected(selected_country):
+def country_selected(event):
+    selected_country = menu.get()
     print("Wybrano", selected_country)
+
 
 root = tk.Tk()
 root.title("Corona Rush")
@@ -37,42 +38,19 @@ orange_color = "#f9aa33"
 left_frame = tk.Frame(root, bg=background_color, width=350, height=window_height)
 left_frame.pack(side=tk.LEFT, fill=tk.Y)
 
-# Tytuł aplikacji
-# label = tk.Label(left_frame, text="Corona Rush", font=("Arial", 25, "bold"), fg="white", bg=background_color)
-# label.place(relx=0.5, rely=0.06, anchor=tk.CENTER)
-
-# Opis selectora
-# label = tk.Label(left_frame, text="Wybierz państwo", font=("Arial", 13), fg="white", bg=background_color)
-# label.place(relx=0.14, rely=0.15)
-
 # Selektor
 countries = ["Polska", "Anglia", "Niemcy", "Rosja"]
 selected_country = tk.StringVar(left_frame)
 selected_country.set(countries[0])  # Ustawienie domyślnego wyboru
-# country_menu = tk.OptionMenu(left_frame, selected_country, *countries, command=country_selected)
-# country_menu.config(width=40)
-# country_menu.place(relx=0.5, rely=0.07, anchor=tk.CENTER)
-menu_width = 40
-menu = tk.OptionMenu(left_frame, selected_country, *countries, command=country_selected)
-menu.config(width=menu_width)
-menu.place(relx=0.5, rely=0.07, anchor=tk.CENTER)
-# menu.pack(pady=10)
 
-# Separator
-# canvas = tk.Canvas(root, width=8, height=window_height, bg=orange_color, highlightthickness=0)
-# canvas.pack(side=tk.LEFT, fill=tk.Y)
+# Combobox o szerokości 40
+menu = ttk.Combobox(left_frame, textvariable=selected_country, values=countries, width=40)
+menu.place(relx=0.5, rely=0.07, anchor=tk.CENTER)
+menu.bind("<<ComboboxSelected>>", country_selected)
 
 # Prawy panel
 right_frame = tk.Frame(root, bg=background_color, width=window_width-300, height=window_height)
 right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
-
-# Opis wykresu
-# label = tk.Label(right_frame, text="Wykres", font=("Arial", 14), fg="white", bg=background_color)
-# label.place(relx=0.5, rely=0.05, anchor=tk.CENTER)
-
-# Ramka dla wykresu
-# chart_frame = tk.Frame(right_frame, bg=chart_color, width=window_width-500, height=window_height-150, highlightthickness=5, highlightbackground=orange_color)
-# chart_frame.place(relx=0.5, rely=0.41, anchor=tk.CENTER)
 
 # Wymiary wykresu
 chart_width = 600
@@ -83,7 +61,7 @@ chart_x = (window_width - chart_width) / 2
 chart_y = (window_height - chart_height) / 2
 
 # Ramka dla wykresu
-chart_frame = tk.Frame(right_frame, bg=chart_color, width=chart_width, height=chart_height, highlightthickness=5, highlightbackground=orange_color)
+chart_frame = tk.Frame(right_frame, bg=chart_color, width=chart_width, height=chart_height)
 chart_frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
 root.mainloop()

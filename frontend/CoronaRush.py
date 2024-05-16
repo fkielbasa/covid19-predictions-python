@@ -3,6 +3,8 @@ from CTkListbox import *
 import json
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import numpy as np
+from scipy.interpolate import interp1d
 
 customtkinter.set_appearance_mode("System")
 customtkinter.set_default_color_theme("blue")
@@ -33,8 +35,16 @@ def plot_data(data, frame, country):
     days = [entry['day'] for entry in data]
     values = [entry['value'] for entry in data]
 
+    # Interpolacja sześcienna dla wygładzenia danych
+    interp_days = np.linspace(min(days), max(days), 500)  # Więcej punktów dla gładkości
+    cubic_interp = interp1d(days, values, kind='cubic')
+    smooth_values = cubic_interp(interp_days)
+
     fig, ax = plt.subplots(figsize=(10, 7))  # Zwiększamy rozmiar figury
     ax.plot(days, values, marker='o')
+
+    # Dodajemy wykres liniowy wygładzony
+    ax.plot(interp_days, smooth_values, label='Smooth Line Chart', color='red')
 
     ax.set(xlabel='Day', ylabel='Value', title=f'Covid Data for {country}')
     ax.grid()

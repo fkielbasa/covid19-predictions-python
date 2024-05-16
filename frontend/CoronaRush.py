@@ -29,14 +29,14 @@ def load_data(country):
         print(f"File {filename} not found.")
         return []
 
-def plot_data(data, frame):
+def plot_data(data, frame, country):
     days = [entry['day'] for entry in data]
     values = [entry['value'] for entry in data]
 
     fig, ax = plt.subplots(figsize=(10, 7))  # Zwiększamy rozmiar figury
     ax.plot(days, values, marker='o')
 
-    ax.set(xlabel='Day', ylabel='Value', title='Covid Data')
+    ax.set(xlabel='Day', ylabel='Value', title=f'Covid Data for {country}')
     ax.grid()
 
     ax.title.set_size(20)  # Zwiększamy rozmiar tytułu
@@ -54,7 +54,12 @@ def plot_data(data, frame):
 def on_country_selected(event):
     selected_country = listbox.get(listbox.curselection())
     data = load_data(selected_country)
-    plot_data(data, right_frame)
+    plot_data(data, right_frame, selected_country)
+
+def load_countries():
+    with open('countries.json', 'r') as file:
+        data = json.load(file)
+    return data['countries']
 
 root = customtkinter.CTk()
 
@@ -73,13 +78,10 @@ left_frame.place(relx=0.12, rely=0.17, anchor="center")
 listbox = CTkListbox(left_frame, command=on_country_selected, width=200, height=150)
 listbox.pack(fill="both", expand=True)
 
-listbox.insert(0, "Poland")
-listbox.insert(1, "Spain")
-listbox.insert(2, "France")
-listbox.insert(3, "Canada")
-listbox.insert(4, "Slovakia")
-listbox.insert(5, "Russia")
-listbox.insert("END", "Ukraine")
+# Wczytaj listę krajów z pliku JSON i wypełnij listbox
+countries = load_countries()
+for i, country in enumerate(countries):
+    listbox.insert(i, country)
 
 # Prawy panel
 right_frame = customtkinter.CTkFrame(root, width=800, height=window_height-100, border_width=5, border_color="#F9AA33")

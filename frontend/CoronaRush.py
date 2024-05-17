@@ -9,6 +9,13 @@ from scipy.interpolate import interp1d
 customtkinter.set_appearance_mode("System")
 customtkinter.set_default_color_theme("blue")
 
+root = customtkinter.CTk()
+
+root.title("Corona Rush")
+
+root.iconbitmap("icon.ico")
+
+
 def calculate_window_size(screen_width, screen_height):
     window_width = int(screen_width * 0.8)
     window_height = int(screen_height * 0.8)
@@ -64,21 +71,27 @@ def plot_data(data, frame, country):
 def on_country_selected(event):
     selected_country = listbox.get(listbox.curselection())
     data = load_data(selected_country)
-    plot_data(data, right_frame, selected_country)
+    if data:
+        plot_data(data, right_frame, selected_country)
+    else:
+        show_waiting_message()
 
 def load_countries():
     with open('countries.json', 'r') as file:
         data = json.load(file)
     return data['countries']
 
-root = customtkinter.CTk()
+def show_waiting_message():
+    for widget in right_frame.winfo_children():
+        widget.destroy()
+    waiting_label = customtkinter.CTkLabel(right_frame, text="Waiting for data...", font=("Arial", 20))
+    waiting_label.place(relx=0.5, rely=0.5, anchor="center")
+
 
 # Obliczenie i ustawienie rozmiaru okna na podstawie rozmiaru ekranu
 window_width, window_height = calculate_window_size(root.winfo_screenwidth(), root.winfo_screenheight())
 root.geometry(f"{window_width}x{window_height}")
 center_window(root, window_width, window_height)
-
-root.title("Corona Rush")
 
 # Lewy panel
 left_frame = customtkinter.CTkFrame(root, width=300, height=window_height)
@@ -96,5 +109,8 @@ for i, country in enumerate(countries):
 # Prawy panel
 right_frame = customtkinter.CTkFrame(root, width=800, height=window_height-100, border_width=5, border_color="#F9AA33")
 right_frame.place(relx=0.62, rely=0.47, anchor="center")
+
+# Początkowa wiadomość "Waiting for data..."
+show_waiting_message()
 
 root.mainloop()

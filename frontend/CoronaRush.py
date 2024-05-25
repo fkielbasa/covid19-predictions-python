@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 from scipy.interpolate import interp1d
+import datetime
 
 customtkinter.set_appearance_mode("System")
 customtkinter.set_default_color_theme("blue")
@@ -29,7 +30,7 @@ def center_window(window, width, height):
     window.geometry(f"{width}x{height}+{x_coordinate}+{y_coordinate}")
 
 def load_data(country):
-    filename = f'CovidData{country}.json'
+    filename = f'data/CovidData{country}.json'
     try:
         with open(filename, 'r') as file:
             data = json.load(file)
@@ -77,7 +78,7 @@ def on_country_selected(event):
         show_waiting_message()
 
 def load_countries():
-    with open('countries.json', 'r') as file:
+    with open('data/Countries.json', 'r') as file:
         data = json.load(file)
     return data['countries']
 
@@ -95,16 +96,47 @@ center_window(root, window_width, window_height)
 
 # Lewy panel
 left_frame = customtkinter.CTkFrame(root, width=300, height=window_height)
-left_frame.place(relx=0.12, rely=0.17, anchor="center")
+left_frame.place(relx=0.145, rely=0.33, anchor="center")
 
 # Lista rozwijalna w ramce
-listbox = CTkListbox(left_frame, command=on_country_selected, width=200, height=150)
-listbox.pack(fill="both", expand=True)
+listbox = CTkListbox(left_frame, command=on_country_selected, width=250, height=150)
+listbox.pack(pady=10)
 
 # Wczytaj listę krajów z pliku JSON i wypełnij listbox
 countries = load_countries()
 for i, country in enumerate(countries):
     listbox.insert(i, country)
+
+# Pole do wpisania dat
+date_label = customtkinter.CTkLabel(left_frame, text="Enter three dates (DD-MM-YYYY):")
+date_label.pack(pady=5)
+
+date_entry1 = customtkinter.CTkEntry(left_frame, width=200)
+date_entry1.pack(pady=5)
+date_entry2 = customtkinter.CTkEntry(left_frame, width=200)
+date_entry2.pack(pady=5)
+date_entry3 = customtkinter.CTkEntry(left_frame, width=200)
+date_entry3.pack(pady=5)
+
+# Przycisk do zatwierdzenia dat
+submit_button = customtkinter.CTkButton(left_frame, text="Submit Dates", command=lambda: on_submit_dates([date_entry1.get(), date_entry2.get(), date_entry3.get()]))
+submit_button.pack(pady=10)
+
+def on_submit_dates(dates):
+    try:
+        formatted_dates = [datetime.datetime.strptime(date, "%d-%m-%Y").strftime("%Y-%m-%d") for date in dates]
+        for date in formatted_dates:
+            print(date)
+    except ValueError as e:
+        print(f"Error parsing dates: {e}")
+
+    selected_country = listbox.get(listbox.curselection())
+    data = load_data(selected_country)
+    filtered_data = [entry for entry in data if entry['day'] in formatted_dates]
+    if filtered_data:
+        plot_data(filtered_data, right_frame, selected_country)
+    else:
+        show_waiting_message()
 
 # Prawy panel
 right_frame = customtkinter.CTkFrame(root, width=800, height=window_height-100, border_width=5, border_color="#F9AA33")

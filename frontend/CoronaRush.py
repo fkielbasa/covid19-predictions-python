@@ -6,6 +6,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 from scipy.interpolate import interp1d
 import datetime
+from tkcalendar import DateEntry
+
 
 from WindowSettings import calculate_window_size
 from WindowSettings import center_window
@@ -140,7 +142,7 @@ for i, country in enumerate(countries):
     listbox.insert(i, country)
 
 # Pole do wpisania dat
-date_label = customtkinter.CTkLabel(left_frame, text="Wprowadź trzy daty (DD-MM-YYYY):")
+date_label = customtkinter.CTkLabel(left_frame, text="Wprowadź trzy daty:")
 date_label.pack(pady=5)
 
 # Ramka dla dat
@@ -150,19 +152,25 @@ date_frame.pack(pady=5)
 # Pierwsza data
 date_label1 = customtkinter.CTkLabel(date_frame, text="od:")
 date_label1.grid(row=0, column=0, padx=5)
-date_entry1 = customtkinter.CTkEntry(date_frame, width=150)
+date_entry1 = DateEntry(date_frame, width=18, background="black", disabledbackground="black", bordercolor="white",
+               headersbackground="#242424", normalbackground="black", foreground='white',
+               normalforeground='white', headersforeground='white', borderwidth=2, date_pattern='dd-mm-yyyy')
 date_entry1.grid(row=0, column=1, padx=5)
 
 # Druga data
 date_label2 = customtkinter.CTkLabel(date_frame, text="do:")
 date_label2.grid(row=1, column=0, padx=5)
-date_entry2 = customtkinter.CTkEntry(date_frame, width=150)
+date_entry2 = DateEntry(date_frame, width=18, background="black", disabledbackground="black", bordercolor="white",
+               headersbackground="#242424", normalbackground="black", foreground='white',
+               normalforeground='white', headersforeground='white', borderwidth=2, date_pattern='dd-mm-yyyy')
 date_entry2.grid(row=1, column=1, padx=5)
 
 # Trzecia data
 date_label3 = customtkinter.CTkLabel(date_frame, text="predykcja do:")
 date_label3.grid(row=2, column=0, padx=5)
-date_entry3 = customtkinter.CTkEntry(date_frame, width=150)
+date_entry3 = DateEntry(date_frame, width=18,  background="black", disabledbackground="black", bordercolor="white",
+               headersbackground="#242424", normalbackground="black", foreground='white',
+               normalforeground='white', headersforeground='white', borderwidth=2, date_pattern='dd-mm-yyyy')
 date_entry3.grid(row=2, column=1, padx=5)
 
 # Przycisk do zatwierdzenia dat

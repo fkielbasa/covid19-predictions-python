@@ -1,13 +1,11 @@
-import json
-
-import customtkinter
-import matplotlib.dates as mdates
 import datetime
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import numpy as np
-from scipy.interpolate import interp1d
+
 import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from scipy.interpolate import interp1d
+
 
 def plot_data(data, frame, country):
     # Przypisanie wartości dla 'cases' do zmiennej dla łatwiejszego dostępu

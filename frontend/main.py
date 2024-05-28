@@ -154,20 +154,7 @@ def main():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-        # Domyslnie pokaz pierwszy wykres
+    # Domyslnie pokaz pierwszy wykres
 
     def show_waiting_message():
         for widget in right_frame.winfo_children():
@@ -211,7 +198,13 @@ def main():
         listbox.insert(i, country)
 
 
-######################################################################
+
+
+
+
+
+
+
     # Pole do wpisania dat
     date_label = customtkinter.CTkLabel(left_frame, text="Wprowadź trzy daty (DD-MM-YYYY):")
     date_label.pack(pady=5)
@@ -304,26 +297,6 @@ def main():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     def on_submit_dates(dates):
         try:
             # Konwersja dat na obiekt datetime
@@ -353,12 +326,6 @@ def main():
 
         except ValueError as e:
             print(f"Error parsing dates: {e}")
-
-
-
-
-
-
 
 
 

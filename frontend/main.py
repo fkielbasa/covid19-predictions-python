@@ -1,43 +1,16 @@
-import customtkinter
-from CTkListbox import *
 import datetime
-
-from pandas.core import frame
-
-from configuration import setup_appearance
-from window_utils import calculate_window_size, center_window
-import requests
-from predictive import *
-from plotting import plot_data
-from data_management import  load_data,load_countries
-import customtkinter
-from CTkListbox import *
-import json
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import numpy as np
-from scipy.interpolate import interp1d
-import datetime
-from main_backend import nowy2
-
-from sklearn.linear_model import LinearRegression
-
-from predictive import *
-import datetime
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import numpy as np
-from scipy.interpolate import interp1d
-import matplotlib.dates as mdates
-
-import pandas as pd
-import numpy as np
-import datetime as dt
-import warnings
 import os
+import warnings
 
-from DataService import getData
+import customtkinter
+import numpy as np
+from CTkListbox import *
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+from data_management import load_data, load_countries
+from plotting import plot_data
+from backend.predictive import *
+from window_utils import calculate_window_size, center_window
 
 current_chart_index = 0  # indeks aktualnie wyświetlanego wykresu
 charts = []  # lista funkcji, które generują wykresy
@@ -47,30 +20,21 @@ def main():
 
     global  current_chart_index
 
-
     root = customtkinter.CTk()
 
     root.title("Corona Rush")
 
     root.iconbitmap("icon.ico")
 
-    setup_appearance()
+    # setup_appearance()
 
+    customtkinter.set_appearance_mode("dark")
 
-
-
-
-
-
-
-
+    customtkinter.set_default_color_theme("blue")
 
 
     def nowy3(data):
         global charts
-
-
-
 
         """Eksperyment predykcji"""
         warnings.filterwarnings("ignore")

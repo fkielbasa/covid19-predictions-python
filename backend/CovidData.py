@@ -1,4 +1,4 @@
-from CovidCase import CovidCase
+from backend.CovidCase import CovidCase
 
 
 class CovidData:

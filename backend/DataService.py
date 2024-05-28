@@ -1,11 +1,11 @@
 import json
 
-from CovidCase import CovidCase
-from CovidData import CovidData
+from backend.CovidCase import CovidCase
+from backend.CovidData import CovidData
 
 
 def getData():
-    with open('data/CovidDataPoland.json', 'r', encoding='utf-8') as file:
+    with open('../frontend/data/CovidDataPoland.json', 'r', encoding='utf-8') as file:
         data = json.load(file)
     lista = []
 

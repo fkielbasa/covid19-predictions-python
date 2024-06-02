@@ -7,6 +7,7 @@ from backend.prediction import nowy3
 from data_management import load_countries, load_data
 from plotting import plot_data
 from window_utils import calculate_window_size, center_window
+from tkcalendar import DateEntry
 
 current_chart_index = 0
 charts = []
@@ -70,10 +71,10 @@ def main():
             date3 = datetime.datetime.strptime(dates[2], "%d-%m-%Y")
 
             if date2 <= date1 or (date2 - date1).days < 7:
-                print("Druga data musi być co najmniej 7 dni późniejsza od pierwszej.")
+                log_message("Druga data musi być co najmniej 7 dni późniejsza od pierwszej.")
                 return
             if date3 <= date1 or date3 <= date2:
-                print("Trzecia data musi być późniejsza niż pierwsza i druga.")
+                log_message("Trzecia data musi być późniejsza niż pierwsza i druga.")
                 return
 
             formatted_dates = [date1.strftime("%Y-%m-%d"), date2.strftime("%Y-%m-%d"), date3.strftime("%Y-%m-%d")]
@@ -87,7 +88,11 @@ def main():
                 show_waiting_message()
 
         except ValueError as e:
-            print(f"Error parsing dates: {e}")
+            log_message(f"Error parsing dates: {e}")
+
+    def log_message(message):
+        alert_label.configure(text=message)
+        print(message)
 
     window_width, window_height = calculate_window_size(root.winfo_screenwidth(), root.winfo_screenheight())
     root.geometry(f"{window_width}x{window_height}")
@@ -114,23 +119,43 @@ def main():
     date_frame = customtkinter.CTkFrame(left_frame)
     date_frame.pack(pady=5)
 
+    # Pierwsza data
     date_label1 = customtkinter.CTkLabel(date_frame, text="od:")
     date_label1.grid(row=0, column=0, padx=5)
-    date_entry1 = customtkinter.CTkEntry(date_frame, width=150)
+    date_entry1 = DateEntry(date_frame, width=18, background="black", disabledbackground="black", bordercolor="white",
+                            headersbackground="#242424", normalbackground="black", foreground='white',
+                            normalforeground='white', headersforeground='white', borderwidth=2,
+                            date_pattern='dd-mm-yyyy')
     date_entry1.grid(row=0, column=1, padx=5)
 
+    # Druga data
     date_label2 = customtkinter.CTkLabel(date_frame, text="do:")
     date_label2.grid(row=1, column=0, padx=5)
-    date_entry2 = customtkinter.CTkEntry(date_frame, width=150)
+    date_entry2 = DateEntry(date_frame, width=18, background="black", disabledbackground="black", bordercolor="white",
+                            headersbackground="#242424", normalbackground="black", foreground='white',
+                            normalforeground='white', headersforeground='white', borderwidth=2,
+                            date_pattern='dd-mm-yyyy')
     date_entry2.grid(row=1, column=1, padx=5)
 
+    # Trzecia data
     date_label3 = customtkinter.CTkLabel(date_frame, text="predykcja do:")
     date_label3.grid(row=2, column=0, padx=5)
-    date_entry3 = customtkinter.CTkEntry(date_frame, width=150)
+    date_entry3 = DateEntry(date_frame, width=18, background="black", disabledbackground="black", bordercolor="white",
+                            headersbackground="#242424", normalbackground="black", foreground='white',
+                            normalforeground='white', headersforeground='white', borderwidth=2,
+                            date_pattern='dd-mm-yyyy')
     date_entry3.grid(row=2, column=1, padx=5)
 
     submit_button = customtkinter.CTkButton(left_frame, text="Submit Dates", command=lambda: on_submit_dates([date_entry1.get(), date_entry2.get(), date_entry3.get()]))
     submit_button.pack(pady=10)
+
+    # Ramka dla alertów
+    alert_frame = customtkinter.CTkFrame(root, height=50, fg_color="#242424")
+    alert_frame.pack(fill='x', side='bottom')
+
+    # Etykieta dla wyświetlania alertów
+    alert_label = customtkinter.CTkLabel(alert_frame, text="", font=("Arial", 14))
+    alert_label.pack(pady=5)
 
     navigation_frame = customtkinter.CTkFrame(left_frame)
     navigation_frame.pack(pady=20)

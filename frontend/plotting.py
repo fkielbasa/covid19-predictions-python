@@ -30,7 +30,7 @@ def plot_data(data, frame, country):
     smooth_values = cubic_interp(interp_days)
 
     fig, ax = plt.subplots(figsize=(10, 7))  # Zwiększamy rozmiar figury
-    ax.plot(days, values, marker='o')
+    #ax.plot(days, values, marker='o')
 
     # Dodajemy wykres liniowy wygładzony
     ax.plot(interp_days, smooth_values, label='Smooth Line Chart', color='red')

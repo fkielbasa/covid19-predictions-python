@@ -1,6 +1,8 @@
 def calculate_window_size(screen_width, screen_height):
-    window_width = int(screen_width * 0.8)
-    window_height = int(screen_height * 0.8)
+    window_height = 720
+    window_width = 1280
+    # window_width = int(screen_width * 0.8)
+    # window_height = int(screen_height * 0.8)
     return window_width, window_height
 
 def center_window(window, width, height):

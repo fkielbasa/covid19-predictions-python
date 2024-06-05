@@ -80,25 +80,55 @@ def main():
             date2 = datetime.datetime.strptime(dates[1], "%d-%m-%Y")
             date3 = datetime.datetime.strptime(dates[2], "%d-%m-%Y")
 
-            if date2 <= date1 or (date2 - date1).days < 7:
-                log_message("Druga data musi być co najmniej 7 dni późniejsza od pierwszej.")
+            if date2 <= date1 or (date2 - date1).days < 89:
+                log_message("Druga data musi być co najmniej 3 miesiące późniejsza od pierwszej.")
                 return
             if date3 <= date1 or date3 <= date2:
                 log_message("Trzecia data musi być późniejsza niż pierwsza i druga.")
                 return
 
-            formatted_dates = [date1.strftime("%Y-%m-%d"), date2.strftime("%Y-%m-%d"), date3.strftime("%Y-%m-%d")]
-
             selected_country = listbox.get(listbox.curselection())
             data = load_data(selected_country)
-            filtered_data = [entry for entry in data if entry['day'] in formatted_dates]
-            if filtered_data:
-                plot_country_chart(right_frame, selected_country)
+
+            if not data:
+                log_message(f"No data found for {selected_country}")
+                return
+
+            # Przefiltrowanie danych od date1 do date2
+            data_date1_to_date2 = [entry for entry in data if
+                                   'day' in entry and date1.strftime("%Y-%m-%d") <= entry['day'] <= date2.strftime(
+                                       "%Y-%m-%d")]
+
+            # Przefiltrowanie danych od date1 do date3
+            data_date1_to_date3 = [entry for entry in data if
+                                   'day' in entry and date1.strftime("%Y-%m-%d") <= entry['day'] <= date3.strftime(
+                                       "%Y-%m-%d")]
+
+            # Debugowanie: Wypisanie przefiltrowanych danych
+            print(f"Dane od {date1.strftime('%Y-%m-%d')} do {date2.strftime('%Y-%m-%d')}: {data_date1_to_date2}")
+            print(f"Dane od {date1.strftime('%Y-%m-%d')} do {date3.strftime('%Y-%m-%d')}: {data_date1_to_date3}")
+
+            # Logowanie przefiltrowanych danych
+            log_message(f"Dane od {date1.strftime('%Y-%m-%d')} do {date2.strftime('%Y-%m-%d')}")
+            for entry in data_date1_to_date2:
+                log_message(str(entry))
+
+            log_message(f"Dane od {date1.strftime('%Y-%m-%d')} do {date3.strftime('%Y-%m-%d')}")
+            for entry in data_date1_to_date3:
+                log_message(str(entry))
+
+            # Wywołanie funkcji rysującej wykres z danymi od date1 do date3
+            if data_date1_to_date3:
+                plot_country_chart(data_date1_to_date3, right_frame, selected_country)
             else:
                 show_waiting_message()
 
         except ValueError as e:
             log_message(f"Error parsing dates: {e}")
+        except KeyError as e:
+            log_message(f"Key error: {e}")
+            print(f"Key error: {e}")
+            print(f"Data for {selected_country}: {data}")
 
     def log_message(message):
         alert_label.configure(text=message)

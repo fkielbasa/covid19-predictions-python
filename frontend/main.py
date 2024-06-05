@@ -1,4 +1,6 @@
 import datetime
+import json
+
 import customtkinter
 from CTkListbox import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -13,6 +15,15 @@ from window_utils import calculate_window_size, center_window
 current_chart_index = 0
 charts = []
 data_for_charts = None
+
+def search_country_in_file(country_name):
+    try:
+        with open("data/Countries.json", "r", encoding="utf-8") as f:
+            countries_data = json.load(f)
+            return country_name.lower() in [country.lower() for country in countries_data["countries"]]
+    except FileNotFoundError:
+        return False
+
 
 def main():
     global current_chart_index
@@ -80,6 +91,7 @@ def main():
                 return
 
             formatted_dates = [date1.strftime("%Y-%m-%d"), date2.strftime("%Y-%m-%d"), date3.strftime("%Y-%m-%d")]
+            global current_chart_index, charts
 
             selected_country = listbox.get(listbox.curselection())
             data = load_data(selected_country)

@@ -23,6 +23,15 @@ def search_country_in_file(country_name):
         return False
 
 
+def search_country_in_file(country_name):
+    try:
+        with open("data/Countries.json", "r", encoding="utf-8") as f:
+            countries_data = json.load(f)
+            return country_name.lower() in [country.lower() for country in countries_data["countries"]]
+    except FileNotFoundError:
+        return False
+
+
 def main():
     global current_chart_index
 
@@ -87,6 +96,9 @@ def main():
             if date3 <= date1 or date3 <= date2:
                 log_message("Trzecia data musi być późniejsza niż pierwsza i druga.")
                 return
+
+            formatted_dates = [date1.strftime("%Y-%m-%d"), date2.strftime("%Y-%m-%d"), date3.strftime("%Y-%m-%d")]
+            global current_chart_index, charts
 
 
             selected_country = listbox.get(listbox.curselection())

@@ -5,7 +5,7 @@ import numpy as np
 from datetime import datetime
 
 from scipy.interpolate import interp1d
-from frontend.data_management import load_data
+from backend.DataManagement import load_data
 
 
 def configure_plot(fig, ax, title, xlabel, ylabel):
@@ -19,7 +19,7 @@ def configure_plot(fig, ax, title, xlabel, ylabel):
 
 def create_smooth_line_chart(dates, values, title, xlabel, ylabel):
     """Tworzy wykres liniowy z interpolacją sześcienną."""
-    fig, ax = plt.subplots(figsize=(10, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
 
     num_dates = [mdates.date2num(datetime.datetime.strptime(date, '%Y-%m-%d')) for date in dates]
 
@@ -37,16 +37,15 @@ def create_smooth_line_chart(dates, values, title, xlabel, ylabel):
     return fig
 
 
-def plot_country_chart(frame, country):
+def plot_country_chart(data,country):
     """Tworzy i rysuje wykres danych COVID dla danego kraju."""
-    data = load_data(country)
     cases = data[0]['cases']
     dates = list(cases.keys())
     values = [details['total'] for date, details in cases.items()]
 
     dates = [datetime.strptime(date, '%Y-%m-%d') for date in dates]
 
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=(6, 6))
     ax.plot(dates, values, label='Total Cases')
     ax.set_title(f'Covid Data for {country}')
     ax.set_xlabel('Date')

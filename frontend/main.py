@@ -1,20 +1,27 @@
 import datetime
 import json
-
 import customtkinter
 from CTkListbox import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkcalendar import DateEntry
 
-
 from backend.prediction import nowy3
-from data_management import load_countries, load_data
+from backend.DataManagement import load_countries, load_data
 from plotting import plot_country_chart
 from window_utils import calculate_window_size, center_window
 
 current_chart_index = 0
 charts = []
 data_for_charts = None
+global current_chart_index, charts
+def search_country_in_file(country_name):
+    try:
+        with open("data/Countries.json", "r", encoding="utf-8") as f:
+            countries_data = json.load(f)
+            return country_name.lower() in [country.lower() for country in countries_data["countries"]]
+    except FileNotFoundError:
+        return False
+
 
 def search_country_in_file(country_name):
     try:
@@ -57,7 +64,7 @@ def main():
             widget.destroy()
 
         if charts:
-            charts[current_chart_index].set_size_inches(10, 7)
+            charts[current_chart_index].set_size_inches(8, 6)
 
             canvas = FigureCanvasTkAgg(charts[current_chart_index], master=right_frame)
             canvas.draw()
@@ -93,20 +100,58 @@ def main():
             formatted_dates = [date1.strftime("%Y-%m-%d"), date2.strftime("%Y-%m-%d"), date3.strftime("%Y-%m-%d")]
             global current_chart_index, charts
 
+
             selected_country = listbox.get(listbox.curselection())
             data = load_data(selected_country)
-            filtered_data = [entry for entry in data if entry['day'] in formatted_dates]
-            if filtered_data:
-                plot_country_chart(right_frame, selected_country)
-            else:
-                show_waiting_message()
+            print(data)
 
+            filtered_data = filter_data_by_dates(data, date1, date2)
+            print(filtered_data)
+            # prediction_charts = nowy3(filtered_data, future_date)
+            country_chart = plot_country_chart(filtered_data, selected_country)
+            charts = [country_chart]
+            current_chart_index = 0
+            show_current_chart()
         except ValueError as e:
-            log_message(f"Error parsing dates: {e}")
+            log_message(f"Niepoprawny format daty: {e}")
+        except Exception as e:
+            log_message(f"Wystąpił błąd: {e}")
 
+    def filter_data_by_dates(data, start_date, end_date):
+        """Filtruje dane na podstawie podanego zakresu dat."""
+        filtered_cases = {date: details for date, details in data[0]['cases'].items() if
+                          start_date <= datetime.datetime.strptime(date, '%Y-%m-%d') <= end_date}
+        return [{'country': data[0]['country'], 'region': data[0]['region'], 'cases': filtered_cases}]
     def log_message(message):
         alert_label.configure(text=message)
         print(message)
+
+    def open_manual_entry_window():
+        manual_entry_window = customtkinter.CTkToplevel(root)
+        manual_entry_window.title("Wpisz ręcznie")
+
+        entry_label = customtkinter.CTkLabel(manual_entry_window, text="Wpisz nazwę kraju:")
+        entry_label.pack(pady=10)
+
+        country_entry = customtkinter.CTkEntry(manual_entry_window, width=250)
+        country_entry.pack(pady=10)
+
+        def manual_entry_submit():
+            search_query = country_entry.get().strip()
+            log_message(search_query)
+
+
+
+
+
+        button_frame = customtkinter.CTkFrame(manual_entry_window)
+        button_frame.pack(pady=10)
+
+        cancel_button = customtkinter.CTkButton(button_frame, text="Anuluj", command=manual_entry_window.destroy)
+        cancel_button.pack(side="left", padx=10)
+
+        submit_button = customtkinter.CTkButton(button_frame, text="Zatwierdź", command=manual_entry_submit)
+        submit_button.pack(side="right", padx=10)
 
     window_width, window_height = calculate_window_size(root.winfo_screenwidth(), root.winfo_screenheight())
     root.geometry(f"{window_width}x{window_height}")
@@ -118,10 +163,13 @@ def main():
     show_waiting_message()
 
     left_frame = customtkinter.CTkFrame(root, width=300, height=window_height)
-    left_frame.place(relx=0.145, rely=0.33, anchor="center")
+    left_frame.place(relx=0.145, rely=0.37, anchor="center")
 
-    listbox = CTkListbox(left_frame, command=on_country_selected, width=250, height=150)
+    listbox = CTkListbox(left_frame, width=250, height=150)
     listbox.pack(pady=10)
+
+    manual_entry_button = customtkinter.CTkButton(left_frame, text="Enter manually", command=open_manual_entry_window)
+    manual_entry_button.pack(pady=5)
 
     countries = load_countries()
     for i, country in enumerate(countries):
@@ -160,7 +208,9 @@ def main():
                             date_pattern='dd-mm-yyyy')
     date_entry3.grid(row=2, column=1, padx=5)
 
-    submit_button = customtkinter.CTkButton(left_frame, text="Submit Dates", command=lambda: on_submit_dates([date_entry1.get(), date_entry2.get(), date_entry3.get()]))
+
+
+    submit_button = customtkinter.CTkButton(left_frame, text="Start", command=lambda: on_submit_dates([date_entry1.get(), date_entry2.get(), date_entry3.get()]))
     submit_button.pack(pady=10)
 
     # Ramka dla alertów

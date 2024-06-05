@@ -1,17 +1,26 @@
 import datetime
+import json
 import customtkinter
 from CTkListbox import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from tkcalendar import DateEntry
 
 from backend.prediction import nowy3
 from data_management import load_countries, load_data
 from plotting import plot_data
 from window_utils import calculate_window_size, center_window
-from tkcalendar import DateEntry
 
 current_chart_index = 0
 charts = []
 data_for_charts = None
+
+def search_country_in_file(country_name):
+    try:
+        with open("data/Countries.json", "r", encoding="utf-8") as f:
+            countries_data = json.load(f)
+            return country_name.lower() in [country.lower() for country in countries_data["countries"]]
+    except FileNotFoundError:
+        return False
 
 def main():
     global current_chart_index
@@ -29,7 +38,7 @@ def main():
         waiting_label = customtkinter.CTkLabel(right_frame, text="Waiting for data...", font=("Arial", 20))
         waiting_label.place(relx=0.5, rely=0.5, anchor="center")
 
-    def on_country_selected(events):
+    def on_country_selected(event):
         global current_chart_index, charts
         selected_country = listbox.get(listbox.curselection())
         data = load_data(selected_country)
@@ -94,6 +103,33 @@ def main():
         alert_label.configure(text=message)
         print(message)
 
+    def open_manual_entry_window():
+        manual_entry_window = customtkinter.CTkToplevel(root)
+        manual_entry_window.title("Wpisz ręcznie")
+
+        entry_label = customtkinter.CTkLabel(manual_entry_window, text="Wpisz nazwę kraju:")
+        entry_label.pack(pady=10)
+
+        country_entry = customtkinter.CTkEntry(manual_entry_window, width=250)
+        country_entry.pack(pady=10)
+
+        def manual_entry_submit():
+            search_query = country_entry.get().strip()
+            log_message(search_query)
+
+
+
+
+
+        button_frame = customtkinter.CTkFrame(manual_entry_window)
+        button_frame.pack(pady=10)
+
+        cancel_button = customtkinter.CTkButton(button_frame, text="Anuluj", command=manual_entry_window.destroy)
+        cancel_button.pack(side="left", padx=10)
+
+        submit_button = customtkinter.CTkButton(button_frame, text="Zatwierdź", command=manual_entry_submit)
+        submit_button.pack(side="right", padx=10)
+
     window_width, window_height = calculate_window_size(root.winfo_screenwidth(), root.winfo_screenheight())
     root.geometry(f"{window_width}x{window_height}")
     center_window(root, window_width, window_height)
@@ -104,10 +140,13 @@ def main():
     show_waiting_message()
 
     left_frame = customtkinter.CTkFrame(root, width=300, height=window_height)
-    left_frame.place(relx=0.145, rely=0.33, anchor="center")
+    left_frame.place(relx=0.145, rely=0.37, anchor="center")
 
     listbox = CTkListbox(left_frame, command=on_country_selected, width=250, height=150)
     listbox.pack(pady=10)
+
+    manual_entry_button = customtkinter.CTkButton(left_frame, text="Enter manually", command=open_manual_entry_window)
+    manual_entry_button.pack(pady=5)
 
     countries = load_countries()
     for i, country in enumerate(countries):

@@ -13,7 +13,7 @@ from window_utils import calculate_window_size, center_window
 current_chart_index = 0
 charts = []
 data_for_charts = None
-global current_chart_index, charts
+
 def search_country_in_file(country_name):
     try:
         with open("data/Countries.json", "r", encoding="utf-8") as f:

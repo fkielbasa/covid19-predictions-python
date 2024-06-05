@@ -7,7 +7,7 @@ from tkcalendar import DateEntry
 
 from backend.prediction import nowy3
 from data_management import load_countries, load_data
-from plotting import plot_data
+from plotting import plot_country_chart
 from window_utils import calculate_window_size, center_window
 
 current_chart_index = 0
@@ -43,9 +43,22 @@ def main():
         selected_country = listbox.get(listbox.curselection())
         data = load_data(selected_country)
         future_date = '2025-05-20'
-        charts = nowy3(data, future_date)
-        if data:
-            plot_data(data, right_frame, selected_country)
+        prediction_charts = nowy3(data, future_date)
+        country_chart = plot_country_chart(data, selected_country)
+        charts = [country_chart] + prediction_charts
+        current_chart_index = 0
+        show_current_chart()
+
+    def show_current_chart():
+        for widget in right_frame.winfo_children():
+            widget.destroy()
+
+        if charts:
+            charts[current_chart_index].set_size_inches(10, 7)
+
+            canvas = FigureCanvasTkAgg(charts[current_chart_index], master=right_frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill='both', expand=True)
         else:
             show_waiting_message()
 
@@ -53,25 +66,13 @@ def main():
         global current_chart_index
         if current_chart_index > 0:
             current_chart_index -= 1
-
-        for widget in right_frame.winfo_children():
-            widget.destroy()
-
-        canvas = FigureCanvasTkAgg(charts[current_chart_index], master=right_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill='both', expand=True)
+        show_current_chart()
 
     def on_next():
         global current_chart_index
         if current_chart_index < len(charts) - 1:
             current_chart_index += 1
-
-        for widget in right_frame.winfo_children():
-            widget.destroy()
-
-        canvas = FigureCanvasTkAgg(charts[current_chart_index], master=right_frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill='both', expand=True)
+        show_current_chart()
 
     def on_submit_dates(dates):
         try:
@@ -92,7 +93,7 @@ def main():
             data = load_data(selected_country)
             filtered_data = [entry for entry in data if entry['day'] in formatted_dates]
             if filtered_data:
-                plot_data(filtered_data, right_frame, selected_country)
+                plot_country_chart(right_frame, selected_country)
             else:
                 show_waiting_message()
 
@@ -206,7 +207,6 @@ def main():
     next_button.pack(side="right", padx=10)
 
     root.mainloop()
-
 
 if __name__ == "__main__":
     main()

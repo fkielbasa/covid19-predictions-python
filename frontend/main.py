@@ -42,23 +42,13 @@ def main():
         waiting_label = customtkinter.CTkLabel(right_frame, text="Waiting for data...", font=("Arial", 20))
         waiting_label.place(relx=0.5, rely=0.5, anchor="center")
 
-    def on_country_selected(event):
-        global current_chart_index, charts
-        selected_country = listbox.get(listbox.curselection())
-        data = load_data(selected_country)
-        future_date = '2025-05-20'
-        prediction_charts = nowy3(data, future_date)
-        country_chart = plot_country_chart(data, selected_country)
-        charts = [country_chart] + prediction_charts
-        current_chart_index = 0
-        show_current_chart()
 
     def show_current_chart():
         for widget in right_frame.winfo_children():
             widget.destroy()
 
         if charts:
-            charts[current_chart_index].set_size_inches(8, 6)
+            charts[current_chart_index].set_size_inches(9, 7)
 
             canvas = FigureCanvasTkAgg(charts[current_chart_index], master=right_frame)
             canvas.draw()
@@ -123,11 +113,10 @@ def main():
             for entry in data_date1_to_date2:
                 log_message(str(entry))
 
-            log_message(f"Dane od {date1.strftime('%Y-%m-%d')} do {date3.strftime('%Y-%m-%d')}")
+            log_message(f"Dane od {date1.strftime('%Y-%m-%d')} do {date2.strftime('%Y-%m-%d')}")
             for entry in data_date1_to_date3:
                 log_message(str(entry))
 
-            # Wywołanie funkcji rysującej wykres z danymi od date1 do date3
             if data_date1_to_date3:
                 plot_country_chart(data_date1_to_date3, right_frame, selected_country)
             else:
@@ -143,8 +132,9 @@ def main():
             filtered_data = filter_data_by_dates(data, date1, date2)
             print(filtered_data)
             # prediction_charts = nowy3(filtered_data, future_date)
-            country_chart = plot_country_chart(filtered_data, selected_country)
-            charts = [country_chart]
+            country_chart_total = plot_country_chart(filtered_data, selected_country, 'total')
+            country_chart_new = plot_country_chart(filtered_data, selected_country, 'new')
+            charts = [country_chart_total, country_chart_new]
             current_chart_index = 0
             show_current_chart()
         except ValueError as e:

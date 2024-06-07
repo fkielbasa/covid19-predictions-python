@@ -37,17 +37,17 @@ def create_smooth_line_chart(dates, values, title, xlabel, ylabel):
     return fig
 
 
-def plot_country_chart(data,country):
+def plot_country_chart(data,country,type):
     """Tworzy i rysuje wykres danych COVID dla danego kraju."""
     cases = data[0]['cases']
     dates = list(cases.keys())
-    values = [details['total'] for date, details in cases.items()]
+    values = [details[type] for date, details in cases.items()]
 
     dates = [datetime.strptime(date, '%Y-%m-%d') for date in dates]
 
     fig, ax = plt.subplots(figsize=(6, 6))
-    ax.plot(dates, values, label='Total Cases')
-    ax.set_title(f'Covid Data for {country}')
+    ax.plot(dates, values, label=type)
+    ax.set_title(f'{type.capitalize()} Cases for {country}')
     ax.set_xlabel('Date')
     ax.set_ylabel('Total Cases')
     ax.legend()
@@ -72,6 +72,7 @@ def plot_country_chart(data,country):
     plt.tight_layout()
 
     return fig
+
 
 if __name__ == "__main__":
     pass

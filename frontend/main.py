@@ -25,7 +25,6 @@ def search_country_in_file(country_name):
     except FileNotFoundError:
         return False
 
-
 def main():
     global current_chart_index
 
@@ -75,46 +74,33 @@ def main():
             date3 = datetime.datetime.strptime(dates[2], "%d-%m-%Y")
 
             if date2 <= date1 or (date2 - date1).days < 89:
-                log_message("Druga data musi być co najmniej 3 miesiące późniejsza od pierwszej.")
+                log_message("The second date must be at least 3 months later than the first.")
                 return
             if date3 <= date1 or date3 <= date2:
-                log_message("Trzecia data musi być późniejsza niż pierwsza i druga.")
+                log_message("The third date must be late than the second and first.")
                 return
-
-            formatted_dates = [date1.strftime("%Y-%m-%d"), date2.strftime("%Y-%m-%d"), date3.strftime("%Y-%m-%d")]
             global current_chart_index, charts
 
             if manual_entry_result == True:
                 selected_country = search_query
             else:
                 selected_country = listbox.get(listbox.curselection())
+            log_message(f"Selected country: {selected_country}")
             data = load_data(selected_country)
 
             if not data:
                 log_message(f"No data found for {selected_country}")
                 return
 
-            # Przefiltrowanie danych od date1 do date2
             data_date1_to_date2 = [entry for entry in data if
                                    'day' in entry and date1.strftime("%Y-%m-%d") <= entry['day'] <= date2.strftime(
                                        "%Y-%m-%d")]
 
-            # Przefiltrowanie danych od date1 do date3
             data_date1_to_date3 = [entry for entry in data if
                                    'day' in entry and date1.strftime("%Y-%m-%d") <= entry['day'] <= date3.strftime(
                                        "%Y-%m-%d")]
 
-            # Debugowanie: Wypisanie przefiltrowanych danych
-            print(f"Dane od {date1.strftime('%Y-%m-%d')} do {date2.strftime('%Y-%m-%d')}: {data_date1_to_date2}")
-            print(f"Dane od {date1.strftime('%Y-%m-%d')} do {date3.strftime('%Y-%m-%d')}: {data_date1_to_date3}")
-
-            # Logowanie przefiltrowanych danych
-            log_message(f"Dane od {date1.strftime('%Y-%m-%d')} do {date2.strftime('%Y-%m-%d')}")
             for entry in data_date1_to_date2:
-                log_message(str(entry))
-
-            log_message(f"Dane od {date1.strftime('%Y-%m-%d')} do {date2.strftime('%Y-%m-%d')}")
-            for entry in data_date1_to_date3:
                 log_message(str(entry))
 
             if data_date1_to_date3:
@@ -127,10 +113,8 @@ def main():
             else:
                 selected_country = listbox.get(listbox.curselection())
             data = load_data(selected_country)
-            print(data)
 
             filtered_data = filter_data_by_dates(data, date1, date2)
-            print(filtered_data)
             # prediction_charts = nowy3(filtered_data, future_date)
             country_chart_total = plot_country_chart(filtered_data, selected_country, 'total')
             country_chart_new = plot_country_chart(filtered_data, selected_country, 'new')
@@ -144,9 +128,9 @@ def main():
             print(f"Key error: {e}")
             print(f"Data for {selected_country}: {data}")
 
-            log_message(f"Niepoprawny format daty: {e}")
+            log_message(f"Incorrect date format: {e}")
         except Exception as e:
-            log_message(f"Wystąpił błąd: {e}")
+            log_message(f"Error: {e}")
 
     def filter_data_by_dates(data, start_date, end_date):
         """Filtruje dane na podstawie podanego zakresu dat."""
@@ -160,9 +144,9 @@ def main():
 
     def open_manual_entry_window():
         manual_entry_window = customtkinter.CTkToplevel(root)
-        manual_entry_window.title("Wpisz ręcznie")
+        manual_entry_window.title("Enter country manually")
 
-        entry_label = customtkinter.CTkLabel(manual_entry_window, text="Wpisz nazwę kraju:")
+        entry_label = customtkinter.CTkLabel(manual_entry_window, text="Enter country:")
         entry_label.pack(pady=10)
 
         country_entry = customtkinter.CTkEntry(manual_entry_window, width=250)
@@ -176,17 +160,17 @@ def main():
             if search_country_in_file(search_query):
                 log_message(search_query)
                 manual_entry_result = True
-                manual_entry_window.destroy()  # Zamknięcie okna po zatwierdzeniu
+                manual_entry_window.destroy()
             else:
-                log_message("Podano błędną nazwę albo kraju nie ma na liście")
+                log_message("Incorrect country given!")
 
         button_frame = customtkinter.CTkFrame(manual_entry_window)
         button_frame.pack(pady=10)
 
-        cancel_button = customtkinter.CTkButton(button_frame, text="Anuluj", command=manual_entry_window.destroy)
+        cancel_button = customtkinter.CTkButton(button_frame, text="Cancel", command=manual_entry_window.destroy)
         cancel_button.pack(side="left", padx=10)
 
-        submit_button = customtkinter.CTkButton(button_frame, text="Zatwierdź", command=manual_entry_submit)
+        submit_button = customtkinter.CTkButton(button_frame, text="Accept", command=manual_entry_submit)
         submit_button.pack(side="right", padx=10)
 
         # Set the position of the manual entry window
@@ -221,14 +205,14 @@ def main():
     for i, country in enumerate(countries):
         listbox.insert(i, country)
 
-    date_label = customtkinter.CTkLabel(left_frame, text="Wprowadź trzy daty (DD-MM-YYYY):")
+    date_label = customtkinter.CTkLabel(left_frame, text="Select three dates (DD-MM-YYYY):")
     date_label.pack(pady=5)
 
     date_frame = customtkinter.CTkFrame(left_frame)
     date_frame.pack(pady=5)
 
     # Pierwsza data
-    date_label1 = customtkinter.CTkLabel(date_frame, text="od:")
+    date_label1 = customtkinter.CTkLabel(date_frame, text="from:")
     date_label1.grid(row=0, column=0, padx=5)
     date_entry1 = DateEntry(date_frame, width=18, background="black", disabledbackground="black", bordercolor="white",
                             headersbackground="#242424", normalbackground="black", foreground='white',
@@ -237,7 +221,7 @@ def main():
     date_entry1.grid(row=0, column=1, padx=5)
 
     # Druga data
-    date_label2 = customtkinter.CTkLabel(date_frame, text="do:")
+    date_label2 = customtkinter.CTkLabel(date_frame, text="to:")
     date_label2.grid(row=1, column=0, padx=5)
     date_entry2 = DateEntry(date_frame, width=18, background="black", disabledbackground="black", bordercolor="white",
                             headersbackground="#242424", normalbackground="black", foreground='white',
@@ -246,7 +230,7 @@ def main():
     date_entry2.grid(row=1, column=1, padx=5)
 
     # Trzecia data
-    date_label3 = customtkinter.CTkLabel(date_frame, text="predykcja do:")
+    date_label3 = customtkinter.CTkLabel(date_frame, text="prediction to:")
     date_label3.grid(row=2, column=0, padx=5)
     date_entry3 = DateEntry(date_frame, width=18, background="black", disabledbackground="black", bordercolor="white",
                             headersbackground="#242424", normalbackground="black", foreground='white',

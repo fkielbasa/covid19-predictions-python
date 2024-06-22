@@ -3,9 +3,7 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime
-
 from scipy.interpolate import interp1d
-from backend.DataManagement import load_data
 
 
 def configure_plot(fig, ax, title, xlabel, ylabel):
@@ -54,8 +52,6 @@ def plot_country_chart(data,country,type):
 
     num_days = (dates[-1] - dates[0]).days
 
-    # Anyway, these are my comments, not chat gpt
-    # Really, trust me
     if num_days > 365: # if less than year then set interval, divide the year into 4 months
         locator = mdates.MonthLocator(interval=3)
     elif num_days > 90:

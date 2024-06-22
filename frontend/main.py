@@ -7,15 +7,14 @@ from tkcalendar import DateEntry
 
 from backend.prediction import nowy3
 from backend.DataManagement import load_countries, load_data
-from plotting import plot_country_chart
-from window_utils import calculate_window_size, center_window
+from Plotting import plot_country_chart
+from WindowUtils import calculate_window_size, center_window
 
 current_chart_index = 0
 charts = []
 data_for_charts = None
 manual_entry_result = None
 search_query = ""
-
 
 def search_country_in_file(country_name):
     try:
@@ -40,7 +39,6 @@ def main():
             widget.destroy()
         waiting_label = customtkinter.CTkLabel(right_frame, text="Waiting for data...", font=("Arial", 20))
         waiting_label.place(relx=0.5, rely=0.5, anchor="center")
-
 
     def show_current_chart():
         for widget in right_frame.winfo_children():
@@ -85,7 +83,7 @@ def main():
                 selected_country = search_query
             else:
                 selected_country = listbox.get(listbox.curselection())
-            log_message(f"Selected country: {selected_country}")
+            # log_message(f"Selected country: {selected_country}")
             data = load_data(selected_country)
 
             if not data:
@@ -138,7 +136,7 @@ def main():
         alert_label.configure(text=message, text_color="white", font=("Arial", 20))
         print(message)
         # Change color back after 3 seconds
-        alert_label.after(3000, lambda: alert_label.configure(text_color="#242424"))
+        alert_label.after(5000, lambda: alert_label.configure(text_color="#242424"))
 
     def open_manual_entry_window():
         manual_entry_window = customtkinter.CTkToplevel(root)
@@ -159,7 +157,6 @@ def main():
                 log_message(f"Selected country: {search_query}")
                 manual_entry_result = True
                 manual_entry_window.destroy()
-                # listbox.selection_clear(0, customtkinter.END)
             else:
                 log_message("Incorrect country given!")
 
@@ -180,6 +177,56 @@ def main():
         manual_entry_window.grab_set()
         manual_entry_window.focus_set()
         manual_entry_window.attributes('-topmost', True)
+
+    def open_details_window():
+        details_window = customtkinter.CTkToplevel(root)
+        details_window.title("Details")
+
+        # Ustawienie większego rozmiaru okna
+        details_window.geometry("400x300")
+
+        selected_country = search_query if manual_entry_result else listbox.get(listbox.curselection())
+        date1_str = date_entry1.get()
+        date2_str = date_entry2.get()
+        date3_str = date_entry3.get()
+
+        # Konwersja dat do obiektów datetime
+        date1 = datetime.datetime.strptime(date1_str, "%d-%m-%Y")
+        date2 = datetime.datetime.strptime(date2_str, "%d-%m-%Y")
+        date3 = datetime.datetime.strptime(date3_str, "%d-%m-%Y")
+
+        # Obliczanie różnic w dniach
+        diff_from_to = (date2 - date1).days
+        diff_to_prediction = (date3 - date2).days
+        diff_from_prediction = (date3 - date1).days
+
+        # Wyświetlanie wybranych informacji
+        country_label = customtkinter.CTkLabel(details_window, text=f"Selected Country: {selected_country}")
+        country_label.pack(pady=10)
+
+        date1_label = customtkinter.CTkLabel(details_window, text=f"From: {date1_str}")
+        date1_label.pack(pady=10)
+
+        date2_label = customtkinter.CTkLabel(details_window, text=f"To: {date2_str}")
+        date2_label.pack(pady=10)
+
+        date3_label = customtkinter.CTkLabel(details_window, text=f"Prediction To: {date3_str}")
+        date3_label.pack(pady=10)
+
+        # Wyświetlanie różnic w dniach
+        diff_from_to_label = customtkinter.CTkLabel(details_window, text=f"Difference (from - to): {diff_from_to} days")
+        diff_from_to_label.pack(pady=10)
+
+        diff_to_prediction_label = customtkinter.CTkLabel(details_window,
+                                                          text=f"Difference (to - prediction to): {diff_to_prediction} days")
+        diff_to_prediction_label.pack(pady=10)
+
+        diff_from_prediction_label = customtkinter.CTkLabel(details_window,
+                                                            text=f"Difference (from - prediction to): {diff_from_prediction} days")
+        diff_from_prediction_label.pack(pady=10)
+
+        # Wyświetlanie okna zawsze na przodzie
+        details_window.attributes('-topmost', True)
 
     def on_listbox_select(event):
         global manual_entry_result, search_query
@@ -265,8 +312,10 @@ def main():
     next_button = customtkinter.CTkButton(navigation_frame, text="Next", command=on_next)
     next_button.pack(side="right", padx=10)
 
-    root.mainloop()
+    details_button = customtkinter.CTkButton(left_frame, text="Show Details", command=open_details_window, fg_color="#F9AA33", hover_color="#956720", text_color="#242424")
+    details_button.pack(pady=10)
 
+    root.mainloop()
 
 if __name__ == "__main__":
     main()

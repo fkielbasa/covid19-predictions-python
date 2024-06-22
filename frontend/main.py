@@ -135,8 +135,10 @@ def main():
         return [{'country': data[0]['country'], 'region': data[0]['region'], 'cases': filtered_cases}]
 
     def log_message(message):
-        alert_label.configure(text=message)
+        alert_label.configure(text=message, text_color="white", font=("Arial", 20))
         print(message)
+        # Change color back after 3 seconds
+        alert_label.after(3000, lambda: alert_label.configure(text_color="#242424"))
 
     def open_manual_entry_window():
         manual_entry_window = customtkinter.CTkToplevel(root)
@@ -154,7 +156,7 @@ def main():
 
             search_query = country_entry.get().strip().capitalize()
             if search_country_in_file(search_query):
-                log_message(search_query)
+                log_message(f"Selected country: {search_query}")
                 manual_entry_result = True
                 manual_entry_window.destroy()
                 # listbox.selection_clear(0, customtkinter.END)
@@ -251,8 +253,8 @@ def main():
     alert_frame.pack(fill='x', side='bottom')
 
     # Etykieta dla wyświetlania alertów
-    alert_label = customtkinter.CTkLabel(alert_frame, text="", font=("Arial", 14))
-    alert_label.pack(pady=5)
+    alert_label = customtkinter.CTkLabel(alert_frame, text="", font=("Arial", 20))
+    alert_label.pack(pady=15)
 
     navigation_frame = customtkinter.CTkFrame(left_frame)
     navigation_frame.pack(pady=20)

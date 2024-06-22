@@ -178,12 +178,20 @@ def main():
         manual_entry_window.focus_set()
         manual_entry_window.attributes('-topmost', True)
 
+    def sum_new_cases(data, start_date, end_date):
+        total_new_cases = 0
+        for date, details in data[0]['cases'].items():
+            current_date = datetime.datetime.strptime(date, '%Y-%m-%d')
+            if start_date <= current_date <= end_date:
+                total_new_cases += details.get('new', 0)
+        return total_new_cases
+
     def open_details_window():
         details_window = customtkinter.CTkToplevel(root)
         details_window.title("Details")
 
         # Ustawienie większego rozmiaru okna
-        details_window.geometry("400x300")
+        details_window.geometry("400x400")
 
         selected_country = search_query if manual_entry_result else listbox.get(listbox.curselection())
         date1_str = date_entry1.get()
@@ -199,6 +207,13 @@ def main():
         diff_from_to = (date2 - date1).days
         diff_to_prediction = (date3 - date2).days
         diff_from_prediction = (date3 - date1).days
+
+        # Ładowanie danych dla wybranego kraju
+        data = load_data(selected_country)
+
+        # Sumowanie nowych przypadków w określonych przedziałach dat
+        new_cases_from_to = sum_new_cases(data, date1, date2)
+        new_cases_to_prediction = sum_new_cases(data, date2, date3)
 
         # Wyświetlanie wybranych informacji
         country_label = customtkinter.CTkLabel(details_window, text=f"Selected Country: {selected_country}")
@@ -224,6 +239,15 @@ def main():
         diff_from_prediction_label = customtkinter.CTkLabel(details_window,
                                                             text=f"Difference (from - prediction to): {diff_from_prediction} days")
         diff_from_prediction_label.pack(pady=10)
+
+        # Wyświetlanie sum nowych przypadków
+        new_cases_from_to_label = customtkinter.CTkLabel(details_window,
+                                                         text=f"New Cases (from - to): {new_cases_from_to}")
+        new_cases_from_to_label.pack(pady=10)
+
+        new_cases_to_prediction_label = customtkinter.CTkLabel(details_window,
+                                                               text=f"New Cases (to - prediction to): {new_cases_to_prediction}")
+        new_cases_to_prediction_label.pack(pady=10)
 
         # Wyświetlanie okna zawsze na przodzie
         details_window.attributes('-topmost', True)

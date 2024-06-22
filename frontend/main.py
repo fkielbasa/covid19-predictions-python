@@ -26,7 +26,7 @@ def search_country_in_file(country_name):
         return False
 
 def main():
-    global current_chart_index
+    global current_chart_index, manual_entry_result, search_query
 
     root = customtkinter.CTk()
     root.title("Corona Rush")
@@ -77,11 +77,11 @@ def main():
                 log_message("The second date must be at least 3 months later than the first.")
                 return
             if date3 <= date1 or date3 <= date2:
-                log_message("The third date must be late than the second and first.")
+                log_message("The third date must be later than the second and first.")
                 return
             global current_chart_index, charts
 
-            if manual_entry_result == True:
+            if manual_entry_result:
                 selected_country = search_query
             else:
                 selected_country = listbox.get(listbox.curselection())
@@ -108,10 +108,6 @@ def main():
             else:
                 show_waiting_message()
 
-            if manual_entry_result == True:
-                selected_country = search_query
-            else:
-                selected_country = listbox.get(listbox.curselection())
             data = load_data(selected_country)
 
             filtered_data = filter_data_by_dates(data, date1, date2)
@@ -161,6 +157,7 @@ def main():
                 log_message(search_query)
                 manual_entry_result = True
                 manual_entry_window.destroy()
+                # listbox.selection_clear(0, customtkinter.END)
             else:
                 log_message("Incorrect country given!")
 
@@ -182,6 +179,12 @@ def main():
         manual_entry_window.focus_set()
         manual_entry_window.attributes('-topmost', True)
 
+    def on_listbox_select(event):
+        global manual_entry_result, search_query
+        manual_entry_result = False
+        search_query = listbox.get(listbox.curselection())
+        log_message(f"Selected country: {search_query}")
+
     window_width, window_height = calculate_window_size(root.winfo_screenwidth(), root.winfo_screenheight())
     root.geometry(f"{window_width}x{window_height}")
     center_window(root, window_width, window_height)
@@ -197,6 +200,7 @@ def main():
 
     listbox = CTkListbox(left_frame, width=250, height=150)
     listbox.pack(pady=10)
+    listbox.bind("<<ListboxSelect>>", on_listbox_select)
 
     manual_entry_button = customtkinter.CTkButton(left_frame, text="Enter manually", command=open_manual_entry_window)
     manual_entry_button.pack(pady=5)
@@ -253,10 +257,10 @@ def main():
     navigation_frame = customtkinter.CTkFrame(left_frame)
     navigation_frame.pack(pady=20)
 
-    prev_button = customtkinter.CTkButton(navigation_frame, text="Poprzedni", command=on_prev)
+    prev_button = customtkinter.CTkButton(navigation_frame, text="Previous", command=on_prev)
     prev_button.pack(side="left", padx=10)
 
-    next_button = customtkinter.CTkButton(navigation_frame, text="Następny", command=on_next)
+    next_button = customtkinter.CTkButton(navigation_frame, text="Next", command=on_next)
     next_button.pack(side="right", padx=10)
 
     root.mainloop()

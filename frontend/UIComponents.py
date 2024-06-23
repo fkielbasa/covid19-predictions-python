@@ -1,3 +1,4 @@
+import datetime
 import customtkinter
 from CTkListbox import CTkListbox
 from tkcalendar import DateEntry
@@ -24,7 +25,7 @@ def create_left_frame(root, window_height):
     date_frame.pack(pady=5)
 
     date_entries = []
-    for i, label in enumerate(["from:", "to:", "prediction to:"]):
+    for i, (label, default_date) in enumerate([("from:", "01-12-2020"), ("to:", "01-04-2023"), ("prediction to:", "01-01-2025")]):
         date_label = customtkinter.CTkLabel(date_frame, text=label)
         date_label.grid(row=i, column=0, padx=5)
         date_entry = DateEntry(date_frame, width=18, background="black", disabledbackground="black", bordercolor="white",
@@ -32,6 +33,7 @@ def create_left_frame(root, window_height):
                                normalforeground='white', headersforeground='white', borderwidth=2,
                                date_pattern='dd-mm-yyyy')
         date_entry.grid(row=i, column=1, padx=5)
+        date_entry.set_date(datetime.datetime.strptime(default_date, "%d-%m-%Y"))
         date_entries.append(date_entry)
 
     submit_button = customtkinter.CTkButton(left_frame, text="Start")

@@ -82,21 +82,29 @@ def handle_listbox_select(event, listbox):
     log_message(f"Selected country: {selected_country}")
 
 
+import customtkinter
+
 def handle_manual_entry(date_entries, right_frame):
     manual_entry_window = customtkinter.CTkToplevel()
-    manual_entry_window.title("Manual Entry")
-    manual_entry_window.geometry("400x300")
+    manual_entry_window.title("Enter country manually")
+    manual_entry_window.geometry("300x150")
 
-    label = customtkinter.CTkLabel(manual_entry_window, text="Enter Country Name:", font=("Arial", 14))
+    label = customtkinter.CTkLabel(manual_entry_window, text="Enter Country:", font=("Arial", 14))
     label.pack(pady=10)
 
-    entry = customtkinter.CTkEntry(manual_entry_window)
+    entry = customtkinter.CTkEntry(manual_entry_window, width=250)
     entry.pack(pady=10)
 
-    button = customtkinter.CTkButton(manual_entry_window, text="Submit",
-                                     command=lambda: submit_manual_entry(entry, manual_entry_window, date_entries,
-                                                                         right_frame))
-    button.pack(pady=10)
+    button_frame = customtkinter.CTkFrame(manual_entry_window)
+    button_frame.pack(pady=10)
+
+    submit_button = customtkinter.CTkButton(button_frame, text="Submit",
+                                            command=lambda: submit_manual_entry(entry, manual_entry_window, date_entries, right_frame))
+    submit_button.pack(side="left", padx=10)
+
+    cancel_button = customtkinter.CTkButton(button_frame, text="Cancel", command=manual_entry_window.destroy)
+    cancel_button.pack(side="right", padx=10)
+
 
 
 def submit_manual_entry(entry, window, date_entries, right_frame):

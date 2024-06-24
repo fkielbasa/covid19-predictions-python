@@ -4,7 +4,7 @@ import numpy as np
 from backend.predictive import *
 
 
-def make_predicition(data):
+def make_prediction(data):
     """Funkcja przeprowadzająca eksperyment predykcji."""
     warnings.filterwarnings("ignore")
 
@@ -30,7 +30,6 @@ def make_predicition(data):
     y_feature = "total"
     xlabel = "data"
     title = "covidowe przypadki"
-
 
     df_train = df[pd.to_datetime(df.date) < pd.to_datetime("2022-01-01")]
     df_test = df[pd.to_datetime(df.date) >= pd.to_datetime("2022-01-01")]

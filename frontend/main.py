@@ -5,7 +5,7 @@ from CTkListbox import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkcalendar import DateEntry
 
-from backend.prediction import nowy3
+from backend import prediction
 from backend.DataManagement import load_countries, load_data
 from Plotting import plot_country_chart
 from WindowUtils import calculate_window_size, center_window
@@ -109,10 +109,10 @@ def main():
             data = load_data(selected_country)
 
             filtered_data = filter_data_by_dates(data, date1, date2)
-            # prediction_charts = nowy3(filtered_data, future_date)
+            prediction_charts = prediction.make_prediction(filtered_data)
             country_chart_total = plot_country_chart(filtered_data, selected_country, 'total')
             country_chart_new = plot_country_chart(filtered_data, selected_country, 'new')
-            charts = [country_chart_total, country_chart_new]
+            charts = [country_chart_total, country_chart_new] + prediction_charts
             current_chart_index = 0
             show_current_chart()
         except ValueError as e:

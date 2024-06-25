@@ -16,6 +16,7 @@ data_for_charts = None
 manual_entry_result = None
 search_query = ""
 
+
 def search_country_in_file(country_name):
     try:
         with open("data/Countries.json", "r", encoding="utf-8") as f:
@@ -23,6 +24,7 @@ def search_country_in_file(country_name):
             return country_name.lower() in [country.lower() for country in countries_data["countries"]]
     except FileNotFoundError:
         return False
+
 
 def main():
     global current_chart_index, manual_entry_result, search_query
@@ -83,33 +85,15 @@ def main():
                 selected_country = search_query
             else:
                 selected_country = listbox.get(listbox.curselection())
-            # log_message(f"Selected country: {selected_country}")
+
             data = load_data(selected_country)
 
             if not data:
                 log_message(f"No data found for {selected_country}")
                 return
 
-            data_date1_to_date2 = [entry for entry in data if
-                                   'day' in entry and date1.strftime("%Y-%m-%d") <= entry['day'] <= date2.strftime(
-                                       "%Y-%m-%d")]
-
-            data_date1_to_date3 = [entry for entry in data if
-                                   'day' in entry and date1.strftime("%Y-%m-%d") <= entry['day'] <= date3.strftime(
-                                       "%Y-%m-%d")]
-
-            for entry in data_date1_to_date2:
-                log_message(str(entry))
-
-            if data_date1_to_date3:
-                plot_country_chart(data_date1_to_date3, right_frame, selected_country)
-            else:
-                show_waiting_message()
-
-            data = load_data(selected_country)
-
             filtered_data = filter_data_by_dates(data, date1, date2)
-            prediction_charts = prediction.make_prediction(filtered_data)
+            prediction_charts = prediction.make_prediction(filtered_data, date3.strftime("%d-%m-%Y"))
             country_chart_total = plot_country_chart(filtered_data, selected_country, 'total')
             country_chart_new = plot_country_chart(filtered_data, selected_country, 'new')
             charts = [country_chart_total, country_chart_new] + prediction_charts
@@ -121,8 +105,6 @@ def main():
             log_message(f"Key error: {e}")
             print(f"Key error: {e}")
             print(f"Data for {selected_country}: {data}")
-
-            log_message(f"Incorrect date format: {e}")
         except Exception as e:
             log_message(f"Error: {e}")
 

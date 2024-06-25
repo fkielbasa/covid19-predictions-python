@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 import numpy as np
 import datetime
+import matplotlib.dates as mdates
 
 
 def prepare_data(cases, data_type='total'):
@@ -13,6 +14,7 @@ def prepare_data(cases, data_type='total'):
 
 
 def make_prediction(filtered_data, prediction_to):
+    print(prediction_to)
     '''Create predictions using linear regression for total and new cases'''
     train_data = filtered_data[0]['cases']
 
@@ -38,21 +40,20 @@ def make_prediction(filtered_data, prediction_to):
 
     # Prepare plots for total cases
     plot_model_prediction(X_train_total, y_train_total, model_total, X_pred_total, y_pred_total,
-                          'MODEL PREDYKCJI covidowe przypadki & regresja (Total)')
+                          'Prediction Model (Total Cases)')
     plot_prediction(X_train_total, y_train_total, X_pred_total, y_pred_total,
-                    'predykcja covidowe przypadki & regresja (Total)')
-    plot_training_data(X_train_total, y_train_total, 'covidowe przypadki {zbiór UCZĄCY} (Total)')
+                    'Prediction (Total Cases)')
+    plot_training_data(X_train_total, y_train_total, 'Training set (Total Cases)')
     plot_training_with_regression(X_train_total, y_train_total, model_total,
-                                  'covidowe przypadki & regresja {zbiór uczący} (Total)')
+                                  'Training set & regression (Total Cases)')
 
-    # Prepare plots for new cases
     plot_model_prediction_new(X_train_new, y_train_new, model_new, X_pred_new, y_pred_new,
-                              'MODEL PREDYKCJI covidowe przypadki & regresja (New)')
+                              'Prediction Model (New Cases)')
     plot_prediction_new(X_train_new, y_train_new, X_pred_new, y_pred_new,
-                        'predykcja covidowe przypadki & regresja (New)')
-    plot_training_data_new(X_train_new, y_train_new, 'covidowe przypadki {zbiór UCZĄCY} (New)')
+                        'Prediction (Total Cases)')
+    plot_training_data_new(X_train_new, y_train_new, 'Training set (New Cases)')
     plot_training_with_regression_new(X_train_new, y_train_new, model_new,
-                                      'covidowe przypadki & regresja {zbiór uczący} (New)')
+                                      'Training set & regression (New Cases)')
 
     return [model_prediction_chart, prediction_chart, training_data_chart, training_with_regression_chart,
             model_prediction_chart_new, prediction_chart_new, training_data_chart_new,
@@ -62,9 +63,9 @@ def make_prediction(filtered_data, prediction_to):
 def plot_model_prediction(X_train, y_train, model, X_pred, y_pred, title):
     '''Plot model prediction for total cases'''
     global model_prediction_chart
-    plt.figure()
-    plt.scatter(X_train, y_train, color='blue', label='Training data')
-    plt.plot(X_pred, y_pred, color='red', label='Prediction')
+    plt.figure(figsize=(8, 6))
+    plt.scatter([datetime.date.fromordinal(int(x)) for x in X_train], y_train, color='blue', label='Training data')
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_pred], y_pred, color='red', label='Prediction')
     plt.xlabel('Date')
     plt.ylabel('Total cases')
     plt.title(title)
@@ -76,12 +77,14 @@ def plot_model_prediction(X_train, y_train, model, X_pred, y_pred, title):
 def plot_prediction(X_train, y_train, X_pred, y_pred, title):
     '''Plot prediction for total cases'''
     global prediction_chart
-    plt.figure()
-    plt.plot(X_pred, y_pred, color='red', label='Prediction')
+    plt.figure(figsize=(8, 6))
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_pred], y_pred, color='red', label='Prediction')
     plt.xlabel('Date')
     plt.ylabel('Total cases')
     plt.title(title)
     plt.legend()
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%m-%Y'))
+    plt.gcf().autofmt_xdate()
     prediction_chart = plt.gcf()
     plt.close()
 
@@ -89,12 +92,14 @@ def plot_prediction(X_train, y_train, X_pred, y_pred, title):
 def plot_training_data(X_train, y_train, title):
     '''Plot training data for total cases'''
     global training_data_chart
-    plt.figure()
-    plt.scatter(X_train, y_train, color='blue', label='Training data')
+    plt.figure(figsize=(8, 6))
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_train], y_train, color='blue', label='Training data')
     plt.xlabel('Date')
     plt.ylabel('Total cases')
     plt.title(title)
     plt.legend()
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%m-%Y'))
+    plt.gcf().autofmt_xdate()
     training_data_chart = plt.gcf()
     plt.close()
 
@@ -102,9 +107,9 @@ def plot_training_data(X_train, y_train, title):
 def plot_training_with_regression(X_train, y_train, model, title):
     '''Plot training data with regression for total cases'''
     global training_with_regression_chart
-    plt.figure()
-    plt.scatter(X_train, y_train, color='blue', label='Training data')
-    plt.plot(X_train, model.predict(X_train), color='red', label='Regression line')
+    plt.figure(figsize=(8, 6))
+    plt.scatter([datetime.date.fromordinal(int(x)) for x in X_train], y_train, color='blue', label='Training data')
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_train], model.predict(X_train), color='red', label='Regression line')
     plt.xlabel('Date')
     plt.ylabel('Total cases')
     plt.title(title)
@@ -116,9 +121,9 @@ def plot_training_with_regression(X_train, y_train, model, title):
 def plot_model_prediction_new(X_train, y_train, model, X_pred, y_pred, title):
     '''Plot model prediction for new cases'''
     global model_prediction_chart_new
-    plt.figure()
-    plt.scatter(X_train, y_train, color='blue', label='Training data')
-    plt.plot(X_pred, y_pred, color='red', label='Prediction')
+    plt.figure(figsize=(8, 6))
+    plt.scatter([datetime.date.fromordinal(int(x)) for x in X_train], y_train, color='blue', label='Training data')
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_pred], y_pred, color='red', label='Prediction')
     plt.xlabel('Date')
     plt.ylabel('New cases')
     plt.title(title)
@@ -130,8 +135,8 @@ def plot_model_prediction_new(X_train, y_train, model, X_pred, y_pred, title):
 def plot_prediction_new(X_train, y_train, X_pred, y_pred, title):
     '''Plot prediction for new cases'''
     global prediction_chart_new
-    plt.figure()
-    plt.plot(X_pred, y_pred, color='red', label='Prediction')
+    plt.figure(figsize=(8, 6))
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_pred], y_pred, color='red', label='Prediction')
     plt.xlabel('Date')
     plt.ylabel('New cases')
     plt.title(title)
@@ -143,8 +148,8 @@ def plot_prediction_new(X_train, y_train, X_pred, y_pred, title):
 def plot_training_data_new(X_train, y_train, title):
     '''Plot training data for new cases'''
     global training_data_chart_new
-    plt.figure()
-    plt.scatter(X_train, y_train, color='blue', label='Training data')
+    plt.figure(figsize=(8, 6))
+    plt.scatter([datetime.date.fromordinal(int(x)) for x in X_train], y_train, color='blue', label='Training data')
     plt.xlabel('Date')
     plt.ylabel('New cases')
     plt.title(title)
@@ -156,9 +161,9 @@ def plot_training_data_new(X_train, y_train, title):
 def plot_training_with_regression_new(X_train, y_train, model, title):
     '''Plot training data with regression for new cases'''
     global training_with_regression_chart_new
-    plt.figure()
-    plt.scatter(X_train, y_train, color='blue', label='Training data')
-    plt.plot(X_train, model.predict(X_train), color='red', label='Regression line')
+    plt.figure(figsize=(8, 6))
+    plt.scatter([datetime.date.fromordinal(int(x)) for x in X_train], y_train, color='blue', label='Training data')
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_train], model.predict(X_train), color='red', label='Regression line')
     plt.xlabel('Date')
     plt.ylabel('New cases')
     plt.title(title)

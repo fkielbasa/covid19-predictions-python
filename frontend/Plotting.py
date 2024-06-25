@@ -43,7 +43,7 @@ def plot_country_chart(data,country,type):
 
     dates = [datetime.strptime(date, '%Y-%m-%d') for date in dates]
 
-    fig, ax = plt.subplots(figsize=(6, 6))
+    fig, ax = plt.subplots(figsize=(8, 6))
     ax.plot(dates, values, label=type)
     ax.set_title(f'{type.capitalize()} Cases for {country}')
     ax.set_xlabel('Date')

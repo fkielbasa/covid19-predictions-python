@@ -47,9 +47,8 @@ def main():
             widget.destroy()
 
         if charts:
-            charts[current_chart_index].set_size_inches(9, 7)
-
-            canvas = FigureCanvasTkAgg(charts[current_chart_index], master=right_frame)
+            fig = charts[current_chart_index]
+            canvas = FigureCanvasTkAgg(fig, master=right_frame)
             canvas.draw()
             canvas.get_tk_widget().pack(fill='both', expand=True)
         else:

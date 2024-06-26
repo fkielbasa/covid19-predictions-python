@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 import json
 import customtkinter
 from CTkListbox import *
@@ -68,9 +68,9 @@ def main():
 
     def on_submit_dates(dates):
         try:
-            date1 = datetime.datetime.strptime(dates[0], "%d-%m-%Y")
-            date2 = datetime.datetime.strptime(dates[1], "%d-%m-%Y")
-            date3 = datetime.datetime.strptime(dates[2], "%d-%m-%Y")
+            date1 = datetime.strptime(dates[0], "%d-%m-%Y")
+            date2 = datetime.strptime(dates[1], "%d-%m-%Y")
+            date3 = datetime.strptime(dates[2], "%d-%m-%Y")
 
             if date2 <= date1 or (date2 - date1).days < 89:
                 log_message("The second date must be at least 3 months later than the first.")
@@ -110,8 +110,19 @@ def main():
     def filter_data_by_dates(data, start_date, end_date):
         """Filtruje dane na podstawie podanego zakresu dat."""
         filtered_cases = {date: details for date, details in data[0]['cases'].items() if
-                          start_date <= datetime.datetime.strptime(date, '%Y-%m-%d') <= end_date}
+                          start_date <= datetime.strptime(date, '%Y-%m-%d') <= end_date}
         return [{'country': data[0]['country'], 'region': data[0]['region'], 'cases': filtered_cases}]
+
+    def calculate_future_date():
+        today = datetime.now()
+        future_date = today + timedelta(days=365)
+        return future_date
+
+    def reset_dates():
+        # Resetujemy daty do domyślnych wartości
+        date_entry1.set_date(datetime(2019, 1, 1))
+        date_entry2.set_date(datetime(2022, 12, 31))
+        date_entry3.set_date(calculate_future_date())
 
     def log_message(message):
         alert_label.configure(text=message, text_color="white", font=("Arial", 20))
@@ -162,7 +173,7 @@ def main():
     def sum_new_cases(data, start_date, end_date):
         total_new_cases = 0
         for date, details in data[0]['cases'].items():
-            current_date = datetime.datetime.strptime(date, '%Y-%m-%d')
+            current_date = datetime.strptime(date, '%Y-%m-%d')
             if start_date <= current_date <= end_date:
                 total_new_cases += details.get('new', 0)
         return total_new_cases
@@ -180,9 +191,9 @@ def main():
         date3_str = date_entry3.get()
 
         # Konwersja dat do obiektów datetime
-        date1 = datetime.datetime.strptime(date1_str, "%d-%m-%Y")
-        date2 = datetime.datetime.strptime(date2_str, "%d-%m-%Y")
-        date3 = datetime.datetime.strptime(date3_str, "%d-%m-%Y")
+        date1 = datetime.strptime(date1_str, "%d-%m-%Y")
+        date2 = datetime.strptime(date2_str, "%d-%m-%Y")
+        date3 = datetime.strptime(date3_str, "%d-%m-%Y")
 
         # Obliczanie różnic w dniach
         diff_from_to = (date2 - date1).days
@@ -270,35 +281,50 @@ def main():
     date_frame.pack(pady=5)
 
     # Pierwsza data
+    date_entry1_date = datetime(2019, 1, 1)
     date_label1 = customtkinter.CTkLabel(date_frame, text="from:")
     date_label1.grid(row=0, column=0, padx=5)
     date_entry1 = DateEntry(date_frame, width=18, background="black", disabledbackground="black", bordercolor="white",
                             headersbackground="#242424", normalbackground="black", foreground='white',
                             normalforeground='white', headersforeground='white', borderwidth=2,
                             date_pattern='dd-mm-yyyy')
+    date_entry1.set_date(date_entry1_date)
     date_entry1.grid(row=0, column=1, padx=5)
 
     # Druga data
+    date_entry2_date = datetime(2022, 12, 31)
     date_label2 = customtkinter.CTkLabel(date_frame, text="to:")
     date_label2.grid(row=1, column=0, padx=5)
     date_entry2 = DateEntry(date_frame, width=18, background="black", disabledbackground="black", bordercolor="white",
                             headersbackground="#242424", normalbackground="black", foreground='white',
                             normalforeground='white', headersforeground='white', borderwidth=2,
                             date_pattern='dd-mm-yyyy')
+    date_entry2.set_date(date_entry2_date)
+
+    # Zabezpieczenie
+    date_entry2.max_date = datetime.now().date()
     date_entry2.grid(row=1, column=1, padx=5)
 
     # Trzecia data
+    date_entry3_date = calculate_future_date()
     date_label3 = customtkinter.CTkLabel(date_frame, text="prediction to:")
     date_label3.grid(row=2, column=0, padx=5)
     date_entry3 = DateEntry(date_frame, width=18, background="black", disabledbackground="black", bordercolor="white",
                             headersbackground="#242424", normalbackground="black", foreground='white',
                             normalforeground='white', headersforeground='white', borderwidth=2,
                             date_pattern='dd-mm-yyyy')
+    date_entry3.set_date(date_entry3_date)
     date_entry3.grid(row=2, column=1, padx=5)
 
-    submit_button = customtkinter.CTkButton(left_frame, text="Start", command=lambda: on_submit_dates(
+    start_reset_frame = customtkinter.CTkFrame(left_frame)
+    start_reset_frame.pack(side="top", pady=10)
+
+    submit_button = customtkinter.CTkButton(start_reset_frame, text="Start", command=lambda: on_submit_dates(
         [date_entry1.get(), date_entry2.get(), date_entry3.get()]))
-    submit_button.pack(pady=10)
+    submit_button.pack(side="right", padx=10)
+
+    reset_button = customtkinter.CTkButton(start_reset_frame, text="Reset data range", command=lambda: reset_dates())
+    reset_button.pack(side="left", padx=10)
 
     # Ramka dla alertów
     alert_frame = customtkinter.CTkFrame(root, height=50, fg_color="#242424")

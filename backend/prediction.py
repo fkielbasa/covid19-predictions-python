@@ -1,90 +1,284 @@
-import datetime
-import warnings
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
 import numpy as np
-from backend.predictive import *
+import datetime
+import matplotlib.dates as mdates
 
 
-def nowy3(data, future_date):
-    """Funkcja przeprowadzająca eksperyment predykcji."""
-    warnings.filterwarnings("ignore")
-
-    drow = []
-
-    cases = data[0]['cases']
-    for date, case_info in cases.items():
-        date_obj = datetime.datetime.strptime(date, '%Y-%m-%d')
-        drow.append((date_obj, date_obj.timestamp(), case_info['total']))
-    df = pd.DataFrame(drow, columns=["date", "timestamp", "total"])
-
-    max_total = df['total'].max()
-    if max_total > 1e9:
-        df['total'] = df['total'] / 1e9
-        ylabel = "nowe przypadki (w mld)"
-    elif max_total > 1e6:
-        df['total'] = df['total'] / 1e6
-        ylabel = "nowe przypadki (w mln)"
-    else:
-        ylabel = "nowe przypadki"
-
-    x_feature = "timestamp"
-    y_feature = "total"
-    xlabel = "data"
-    title = "covidowe przypadki"
-
-    visualize_plot_scatter1 = visualize_plot_scatter(
-        x_plot=None, y_plot=None, x_scatter=df["date"], y_scatter=df.loc[:, y_feature],
-        title=title, xlabel=xlabel, ylabel=ylabel, plot_color="orange", scatter_color="green"
-    )
-
-    df_train = df[pd.to_datetime(df.date) < pd.to_datetime("2022-01-01")]
-
-    df_test = df[pd.to_datetime(df.date) >= pd.to_datetime("2022-01-01")]
-
-    visualize3 = visualize(df=df_train, x="date", y=y_feature, title=title + "\n{Zbiór UCZĄCY}", regression=False)
-
-    visualize4 = visualize(df=df_train, x="date", y=y_feature,
-                           title=title + " & " + "Regresja" + "\n{Zbiór UCZĄCY}",
-                           regression=True)
-
-    x_train = np.array(df_train[x_feature]).reshape((-1, 1))
-    y_train = np.array(df_train[y_feature])
-    model, _ = predictor(x_train, y_train)
-
-    x = np.linspace(np.min(x_train), np.max(x_train), 5000).flatten()
-    y = model.coef_ * x + model.intercept_
-    x_dates = [datetime.datetime.fromtimestamp(ts) for ts in x]
-    chart_title = "MODEL PREDYKCJI\n" + title + " & " + "Regresja"
-    visualize_plot_scatter2 = visualize_plot_scatter(
-        x_plot=x_dates, y_plot=y, x_scatter=df_train["date"], y_scatter=y_train,
-        title=chart_title, xlabel=xlabel, ylabel=ylabel, plot_color="orange", scatter_color="green"
-    )
-    x_test = np.array(df_test[x_feature]).reshape((-1, 1))
-    y_test = np.array(df_test[y_feature])
-    df_prediction, _ = prediction(model, x_test, y_test)
-
-    x_test_dates = df_test["date"]
-    chart_title = "PREDYKCJA\n" + title + " & " + "Regresja"
-    visualize_plot_scatter3 = visualize_plot_scatter(
-        x_plot=x_test_dates, y_plot=df_prediction["y_pred"], x_scatter=x_test_dates,
-        y_scatter=y_test,
-        title=chart_title, xlabel=xlabel, ylabel=ylabel, plot_color="orange", scatter_color="green"
-    )
-
-    last_date = df['date'].max()
-    future_timestamps = pd.date_range(start=last_date, end=future_date).map(datetime.datetime.timestamp)
-
-    x_future = np.array(future_timestamps).reshape((-1, 1))
-    y_future_pred = model.predict(x_future)
-    x_future_dates = [datetime.datetime.fromtimestamp(ts) for ts in future_timestamps]
-
-    chart_title = "PROGNOZA NA PRZYSZŁOŚĆ\n" + title + " & " + "Regresja"
-    visualize_plot_scatter4 = visualize_plot_scatter(
-        x_plot=x_future_dates, y_plot=y_future_pred, x_scatter=None, y_scatter=None,
-        title=chart_title, xlabel=xlabel, ylabel=ylabel, plot_color="orange", scatter_color="blue"
-    )
-
-    return [visualize_plot_scatter4, visualize_plot_scatter2, visualize_plot_scatter3, visualize_plot_scatter1]
+def prepare_data(cases, data_type='total'):
+    '''Prepare data for training and prediction'''
+    dates = sorted(cases.keys())
+    X = np.array([datetime.datetime.strptime(date, '%Y-%m-%d').toordinal() for date in dates]).reshape(-1, 1)
+    y = np.array([cases[date][data_type] for date in dates])
+    return X, y
 
 
-if __name__ == "__main__":
-    pass
+def make_prediction(filtered_data, prediction_to):
+    print(prediction_to)
+    '''Create predictions using linear regression and Random Forest for total and new cases'''
+    train_data = filtered_data[0]['cases']
+
+    X_train_total, y_train_total = prepare_data(train_data, 'total')
+    X_train_new, y_train_new = prepare_data(train_data, 'new')
+
+    # Train the model for total cases using Linear Regression
+    model_total_lr = LinearRegression()
+    model_total_lr.fit(X_train_total, y_train_total)
+
+    # Train the model for total cases using Random Forest
+    model_total_rf = RandomForestRegressor(n_estimators=100)
+    model_total_rf.fit(X_train_total, y_train_total)
+
+    # Train the model for new cases using Linear Regression
+    model_new_lr = LinearRegression()
+    model_new_lr.fit(X_train_new, y_train_new)
+
+    # Train the model for new cases using Random Forest
+    model_new_rf = RandomForestRegressor(n_estimators=100)
+    model_new_rf.fit(X_train_new, y_train_new)
+
+    # Define prediction range
+    prediction_end_date = datetime.datetime.strptime(prediction_to, '%d-%m-%Y').toordinal()
+
+    X_pred_total = np.arange(max(X_train_total), prediction_end_date + 1).reshape(-1, 1)
+    y_pred_total_lr = model_total_lr.predict(X_pred_total)
+    y_pred_total_rf = model_total_rf.predict(X_pred_total)
+
+    X_pred_new = np.arange(max(X_train_new), prediction_end_date + 1).reshape(-1, 1)
+    y_pred_new_lr = model_new_lr.predict(X_pred_new)
+    y_pred_new_rf = model_new_rf.predict(X_pred_new)
+
+    # Prepare plots for total cases
+    plot_model_prediction(X_train_total, y_train_total, model_total_lr, X_pred_total, y_pred_total_lr,
+                          'Prediction Model (Total Cases) - Linear Regression')
+    plot_prediction(X_train_total, y_train_total, X_pred_total, y_pred_total_lr,
+                    'Prediction (Total Cases) - Linear Regression')
+    plot_training_data(X_train_total, y_train_total, 'Training set (Total Cases)')
+    plot_training_with_regression(X_train_total, y_train_total, model_total_lr,
+                                  'Training set & regression (Total Cases) - Linear Regression')
+
+    plot_model_prediction_new(X_train_new, y_train_new, model_new_lr, X_pred_new, y_pred_new_lr,
+                              'Prediction Model (New Cases) - Linear Regression')
+    plot_prediction_new(X_train_new, y_train_new, X_pred_new, y_pred_new_lr,
+                        'Prediction (New Cases) - Linear Regression')
+    plot_training_data_new(X_train_new, y_train_new, 'Training set (New Cases)')
+    plot_training_with_regression_new(X_train_new, y_train_new, model_new_lr,
+                                      'Training set & regression (New Cases) - Linear Regression')
+
+    # Prepare plots for Random Forest total cases
+    plot_model_prediction_rf(X_train_total, y_train_total, model_total_rf, X_pred_total, y_pred_total_rf,
+                             'Prediction Model (Total Cases) - Random Forest')
+    plot_prediction_rf(X_train_total, y_train_total, X_pred_total, y_pred_total_rf,
+                       'Prediction (Total Cases) - Random Forest')
+    plot_training_with_regression_rf(X_train_total, y_train_total, model_total_rf,
+                                     'Training set & regression (Total Cases) - Random Forest')
+
+    # Prepare plots for Random Forest new cases
+    plot_model_prediction_new_rf(X_train_new, y_train_new, model_new_rf, X_pred_new, y_pred_new_rf,
+                                 'Prediction Model (New Cases) - Random Forest')
+    plot_prediction_new_rf(X_train_new, y_train_new, X_pred_new, y_pred_new_rf,
+                           'Prediction (New Cases) - Random Forest')
+    plot_training_with_regression_new_rf(X_train_new, y_train_new, model_new_rf,
+                                         'Training set & regression (New Cases) - Random Forest')
+
+    return [model_prediction_chart, prediction_chart, training_data_chart, training_with_regression_chart,
+            model_prediction_chart_new, prediction_chart_new, training_data_chart_new,
+            training_with_regression_chart_new, model_prediction_chart_rf, prediction_chart_rf,
+            model_prediction_chart_new_rf, prediction_chart_new_rf]
+
+
+def plot_model_prediction(X_train, y_train, model, X_pred, y_pred, title):
+    '''Plot model prediction for total cases'''
+    global model_prediction_chart
+    plt.figure(figsize=(8, 6))
+    plt.scatter([datetime.date.fromordinal(int(x)) for x in X_train], y_train, color='blue', label='Training data')
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_pred], y_pred, color='red', label='Prediction')
+    plt.xlabel('Date')
+    plt.ylabel('Total cases')
+    plt.title(title)
+    plt.legend()
+    model_prediction_chart = plt.gcf()
+    plt.close()
+
+
+def plot_prediction(X_train, y_train, X_pred, y_pred, title):
+    '''Plot prediction for total cases'''
+    global prediction_chart
+    plt.figure(figsize=(8, 6))
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_pred], y_pred, color='red', label='Prediction')
+    plt.xlabel('Date')
+    plt.ylabel('Total cases')
+    plt.title(title)
+    plt.legend()
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%m-%Y'))
+    plt.gcf().autofmt_xdate()
+    prediction_chart = plt.gcf()
+    plt.close()
+
+
+def plot_training_data(X_train, y_train, title):
+    '''Plot training data for total cases'''
+    global training_data_chart
+    plt.figure(figsize=(8, 6))
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_train], y_train, color='blue', label='Training data')
+    plt.xlabel('Date')
+    plt.ylabel('Total cases')
+    plt.title(title)
+    plt.legend()
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%m-%Y'))
+    plt.gcf().autofmt_xdate()
+    training_data_chart = plt.gcf()
+    plt.close()
+
+
+def plot_training_with_regression(X_train, y_train, model, title):
+    '''Plot training data with regression for total cases'''
+    global training_with_regression_chart
+    plt.figure(figsize=(8, 6))
+    plt.scatter([datetime.date.fromordinal(int(x)) for x in X_train], y_train, color='blue', label='Training data')
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_train], model.predict(X_train), color='red', label='Regression line')
+    plt.xlabel('Date')
+    plt.ylabel('Total cases')
+    plt.title(title)
+    plt.legend()
+    training_with_regression_chart = plt.gcf()
+    plt.close()
+
+
+def plot_model_prediction_new(X_train, y_train, model, X_pred, y_pred, title):
+    '''Plot model prediction for new cases'''
+    global model_prediction_chart_new
+    plt.figure(figsize=(8, 6))
+    plt.scatter([datetime.date.fromordinal(int(x)) for x in X_train], y_train, color='blue', label='Training data')
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_pred], y_pred, color='red', label='Prediction')
+    plt.xlabel('Date')
+    plt.ylabel('New cases')
+    plt.title(title)
+    plt.legend()
+    model_prediction_chart_new = plt.gcf()
+    plt.close()
+
+
+def plot_prediction_new(X_train, y_train, X_pred, y_pred, title):
+    '''Plot prediction for new cases'''
+    global prediction_chart_new
+    plt.figure(figsize=(8, 6))
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_pred], y_pred, color='red', label='Prediction')
+    plt.xlabel('Date')
+    plt.ylabel('New cases')
+    plt.title(title)
+    plt.legend()
+    prediction_chart_new = plt.gcf()
+    plt.close()
+
+
+def plot_training_data_new(X_train, y_train, title):
+    '''Plot training data for new cases'''
+    global training_data_chart_new
+    plt.figure(figsize=(8, 6))
+    plt.scatter([datetime.date.fromordinal(int(x)) for x in X_train], y_train, color='blue', label='Training data')
+    plt.xlabel('Date')
+    plt.ylabel('New cases')
+    plt.title(title)
+    plt.legend()
+    training_data_chart_new = plt.gcf()
+    plt.close()
+
+
+def plot_training_with_regression_new(X_train, y_train, model, title):
+    '''Plot training data with regression for new cases'''
+    global training_with_regression_chart_new
+    plt.figure(figsize=(8, 6))
+    plt.scatter([datetime.date.fromordinal(int(x)) for x in X_train], y_train, color='blue', label='Training data')
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_train], model.predict(X_train), color='red', label='Regression line')
+    plt.xlabel('Date')
+    plt.ylabel('New cases')
+    plt.title(title)
+    plt.legend()
+    training_with_regression_chart_new = plt.gcf()
+    plt.close()
+
+
+def plot_model_prediction_rf(X_train, y_train, model, X_pred, y_pred, title):
+    '''Plot model prediction for total cases using Random Forest'''
+    global model_prediction_chart_rf
+    plt.figure(figsize=(8, 6))
+    plt.scatter([datetime.date.fromordinal(int(x)) for x in X_train], y_train, color='blue', label='Training data')
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_pred], y_pred, color='green', label='Prediction')
+    plt.xlabel('Date')
+    plt.ylabel('Total cases')
+    plt.title(title)
+    plt.legend()
+    model_prediction_chart_rf = plt.gcf()
+    plt.close()
+
+
+def plot_prediction_rf(X_train, y_train, X_pred, y_pred, title):
+    '''Plot prediction for total cases using Random Forest'''
+    global prediction_chart_rf
+    plt.figure(figsize=(8, 6))
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_pred], y_pred, color='green', label='Prediction')
+    plt.xlabel('Date')
+    plt.ylabel('Total cases')
+    plt.title(title)
+    plt.legend()
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%m-%Y'))
+    plt.gcf().autofmt_xdate()
+    prediction_chart_rf = plt.gcf()
+    plt.close()
+
+
+def plot_training_with_regression_rf(X_train, y_train, model, title):
+    '''Plot training data with regression for total cases using Random Forest'''
+    global training_with_regression_chart_rf
+    plt.figure(figsize=(8, 6))
+    plt.scatter([datetime.date.fromordinal(int(x)) for x in X_train], y_train, color='blue', label='Training data')
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_train], model.predict(X_train), color='green', label='Regression line')
+    plt.xlabel('Date')
+    plt.ylabel('Total cases')
+    plt.title(title)
+    plt.legend()
+    training_with_regression_chart_rf = plt.gcf()
+    plt.close()
+
+
+def plot_model_prediction_new_rf(X_train, y_train, model, X_pred, y_pred, title):
+    '''Plot model prediction for new cases using Random Forest'''
+    global model_prediction_chart_new_rf
+    plt.figure(figsize=(8, 6))
+    plt.scatter([datetime.date.fromordinal(int(x)) for x in X_train], y_train, color='blue', label='Training data')
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_pred], y_pred, color='green', label='Prediction')
+    plt.xlabel('Date')
+    plt.ylabel('New cases')
+    plt.title(title)
+    plt.legend()
+    model_prediction_chart_new_rf = plt.gcf()
+    plt.close()
+
+
+def plot_prediction_new_rf(X_train, y_train, X_pred, y_pred, title):
+    '''Plot prediction for new cases using Random Forest'''
+    global prediction_chart_new_rf
+    plt.figure(figsize=(8, 6))
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_pred], y_pred, color='green', label='Prediction')
+    plt.xlabel('Date')
+    plt.ylabel('New cases')
+    plt.title(title)
+    plt.legend()
+    prediction_chart_new_rf = plt.gcf()
+    plt.close()
+
+
+def plot_training_with_regression_new_rf(X_train, y_train, model, title):
+    '''Plot training data with regression for new cases using Random Forest'''
+    global training_with_regression_chart_new_rf
+    plt.figure(figsize=(8, 6))
+    plt.scatter([datetime.date.fromordinal(int(x)) for x in X_train], y_train, color='blue', label='Training data')
+    plt.plot([datetime.date.fromordinal(int(x)) for x in X_train], model.predict(X_train), color='green', label='Regression line')
+    plt.xlabel('Date')
+    plt.ylabel('New cases')
+    plt.title(title)
+    plt.legend()
+    training_with_regression_chart_new_rf = plt.gcf()
+    plt.close()
